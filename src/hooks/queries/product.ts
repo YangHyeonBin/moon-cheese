@@ -17,6 +17,9 @@ const recentProductQueryKey = ['recent', 'product', 'list'] as const;
 export const useRecentProductList = () => {
   return useQuery({
     queryKey: recentProductQueryKey,
-    queryFn: async () => http.get<RecentProductResponse>('/api/recent/product/list'),
+    queryFn: async () => {
+      const response = http.get<RecentProductResponse>('/api/recent/product/list');
+      return (await response).recentProducts;
+    },
   });
 };
