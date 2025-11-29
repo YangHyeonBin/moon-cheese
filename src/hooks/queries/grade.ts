@@ -18,7 +18,6 @@ export const useGradePoint = () => {
     queryKey: gradePointQueryKey,
     queryFn: async () => {
       const response = await http.get<GradePointResponse>('/api/grade/point');
-      console.log(response);
       return response.gradePointList;
     },
   });

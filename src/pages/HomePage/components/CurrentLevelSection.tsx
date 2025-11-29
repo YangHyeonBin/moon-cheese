@@ -68,7 +68,6 @@ function CurrentLevelSection() {
     return null;
   }
 
-  console.log(gradePoint);
   return (
     <styled.section css={{ px: 5, py: 4 }}>
       <Text variant="H1_Bold">현재 등급</Text>
