@@ -1,29 +1,24 @@
 import { Flex, styled } from 'styled-system/jsx';
 import { Spacing, Text } from '@/ui-lib';
 import { useRecentProductList } from '@/hooks/queries/product';
-import { Loader } from 'lucide-react';
 import { isServerError } from '@/utils/error';
 import ErrorSection from '@/components/ErrorSection';
 import { useExchangeRate } from '@/hooks/queries/exchange';
 import { useCurrency } from '@/providers/CurrencyProvider';
 import { formatPrice } from '@/utils/price';
 
-function RecentPurchaseSection() {
+export default function RecentPurchaseSection() {
   const { currency } = useCurrency();
   const recentProductListQuery = useRecentProductList();
   const exchangeRateQuery = useExchangeRate();
 
   const queries = [recentProductListQuery, exchangeRateQuery];
 
-  const isLoading = queries.some(q => q.isLoading);
+  // const isLoading = queries.some(q => q.isLoading);
   const hasServerError = queries.some(q => q.error && isServerError(q.error));
   const refetchFailed = () => {
     queries.filter(q => q.error && isServerError(q.error)).forEach(q => q.refetch());
   };
-
-  if (isLoading) {
-    return <Loader />;
-  }
 
   if (hasServerError) {
     return <ErrorSection onRetry={refetchFailed} />;
@@ -52,34 +47,67 @@ function RecentPurchaseSection() {
         }}
         direction={'column'}
       >
-        {recentProductList?.map(product => {
-          return (
-            <Flex
-              key={product?.id}
-              css={{
-                gap: 4,
-              }}
-            >
-              <styled.img
-                src={product?.thumbnail}
-                alt="item"
+        {!recentProductList ? (
+          <RecentPurchaseSkeleton />
+        ) : (
+          recentProductList.map(product => {
+            return (
+              <Flex
+                key={product?.id}
                 css={{
-                  w: '60px',
-                  h: '60px',
-                  objectFit: 'cover',
-                  rounded: 'xl',
+                  gap: 4,
                 }}
-              />
-              <Flex flexDir="column" gap={1}>
-                <Text variant="B2_Medium">{product?.name}</Text>
-                <Text variant="H1_Bold">{formatPrice(product?.price, currency, exchangeRate)}</Text>
+              >
+                <styled.img
+                  src={product?.thumbnail}
+                  alt="item"
+                  css={{
+                    w: '60px',
+                    h: '60px',
+                    objectFit: 'cover',
+                    rounded: 'xl',
+                  }}
+                />
+                <Flex flexDir="column" gap={1}>
+                  <Text variant="B2_Medium">{product?.name}</Text>
+                  <Text variant="H1_Bold">{formatPrice(product?.price, currency, exchangeRate)}</Text>
+                </Flex>
               </Flex>
-            </Flex>
-          );
-        })}
+            );
+          })
+        )}
       </Flex>
     </styled.section>
   );
 }
 
-export default RecentPurchaseSection;
+function RecentPurchaseSkeleton() {
+  return (
+    <>
+      {[1, 2, 3].map(i => (
+        <Flex key={i} css={{ gap: 4 }}>
+          {/* 이미지 스켈레톤 */}
+          <styled.div
+            css={{ w: '60px', h: '60px', rounded: 'xl', bg: 'background.02_light-gray', animation: 'skeleton-pulse' }}
+          />
+          <Flex flexDir="column" gap={1}>
+            {/* 이름 스켈레톤 */}
+            <styled.div
+              css={{
+                w: '120px',
+                h: '20px',
+                rounded: 'md',
+                bg: 'background.02_light-gray',
+                animation: 'skeleton-pulse',
+              }}
+            ></styled.div>
+            {/* 가격 스켈레톤 */}
+            <styled.div
+              css={{ w: '80px', h: '24px', rounded: 'md', bg: 'background.02_light-gray', animation: 'skeleton-pulse' }}
+            ></styled.div>
+          </Flex>
+        </Flex>
+      ))}
+    </>
+  );
+}

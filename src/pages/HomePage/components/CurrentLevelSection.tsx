@@ -1,7 +1,6 @@
 import { Box, Flex, styled } from 'styled-system/jsx';
 import { ProgressBar, Spacing, Text } from '@/ui-lib';
 import { useMe, type MeResponse } from '@/hooks/queries/user';
-import { Loader } from 'lucide-react';
 import { isServerError } from '@/utils/error';
 import ErrorSection from '@/components/ErrorSection';
 import { GRADE_DISPLAY_NAME } from '@/constants/grade';
@@ -40,21 +39,17 @@ const getNextGradeInfo = (
   };
 };
 
-function CurrentLevelSection() {
+export default function CurrentLevelSection() {
   const myQuery = useMe();
   const gradePointQuery = useGradePoint();
 
   const queries = [myQuery, gradePointQuery];
 
-  const isLoading = queries.some(q => q.isLoading);
+  // const isLoading = queries.some(q => q.isLoading);
   const hasServerError = queries.some(q => q.error && isServerError(q.error));
   const refetchFailed = () => {
     queries.filter(q => q.error && isServerError(q.error)).forEach(q => q.refetch());
   };
-
-  if (isLoading) {
-    return <Loader />;
-  }
 
   if (hasServerError) {
     return <ErrorSection onRetry={refetchFailed} />;
@@ -63,10 +58,10 @@ function CurrentLevelSection() {
   const my = myQuery.data;
   const gradePoint = gradePointQuery.data;
 
-  if (!my || !gradePoint) {
-    console.warn('조회된 데이터가 없습니다.');
-    return null;
-  }
+  // if (!my || !gradePoint) {
+  //   console.warn('조회된 데이터가 없습니다.');
+  //   return null;
+  // }
 
   return (
     <styled.section css={{ px: 5, py: 4 }}>
@@ -75,29 +70,79 @@ function CurrentLevelSection() {
       <Spacing size={4} />
 
       <Box bg="background.01_white" css={{ px: 5, py: 4, rounded: '2xl' }}>
-        <Flex flexDir="column" gap={2}>
-          <Text variant="H2_Bold">{GRADE_DISPLAY_NAME[my.grade]}</Text>
+        {!my || !gradePoint ? (
+          <CurrentLevelSkeleton />
+        ) : (
+          <Flex flexDir="column" gap={2}>
+            <Text variant="H2_Bold">{GRADE_DISPLAY_NAME[my.grade]}</Text>
 
-          <ProgressBar value={getNextGradeInfo(my, gradePoint).progress} size="xs" />
+            <ProgressBar value={getNextGradeInfo(my, gradePoint).progress} size="xs" />
 
-          <Flex justifyContent="space-between">
-            <Box textAlign="left">
-              <Text variant="C1_Bold">현재 포인트</Text>
-              <Text variant="C2_Regular" color="neutral.03_gray">
-                {my.point}p
-              </Text>
-            </Box>
-            <Box textAlign="right">
-              <Text variant="C1_Bold">다음 등급까지</Text>
-              <Text variant="C2_Regular" color="neutral.03_gray">
-                {getNextGradeInfo(my, gradePoint).pointsNeeded}p
-              </Text>
-            </Box>
+            <Flex justifyContent="space-between">
+              <Box textAlign="left">
+                <Text variant="C1_Bold">현재 포인트</Text>
+                <Text variant="C2_Regular" color="neutral.03_gray">
+                  {my.point}p
+                </Text>
+              </Box>
+              <Box textAlign="right">
+                <Text variant="C1_Bold">다음 등급까지</Text>
+                <Text variant="C2_Regular" color="neutral.03_gray">
+                  {getNextGradeInfo(my, gradePoint).pointsNeeded}p
+                </Text>
+              </Box>
+            </Flex>
           </Flex>
-        </Flex>
+        )}
       </Box>
     </styled.section>
   );
 }
 
-export default CurrentLevelSection;
+function CurrentLevelSkeleton() {
+  return (
+    <Flex flexDir="column" gap={2}>
+      {/* 등급 이름 스켈레톤 */}
+      <styled.div
+        css={{
+          w: '80px',
+          h: '24px',
+          rounded: 'md',
+          bg: 'background.02_light-gray',
+          animation: 'skeleton-pulse',
+        }}
+      ></styled.div>
+
+      <ProgressBar value={0} size="xs" />
+
+      <Flex justifyContent="space-between">
+        <Box textAlign="left">
+          <Text variant="C1_Bold">현재 포인트</Text>
+          {/* 현재 포인트 스켈레톤 */}
+          <styled.div
+            css={{
+              w: '32px',
+              h: '16px',
+              rounded: 'md',
+              bg: 'background.02_light-gray',
+              animation: 'skeleton-pulse',
+            }}
+          ></styled.div>
+        </Box>
+        <Box textAlign="right">
+          <Text variant="C1_Bold">다음 등급까지</Text>
+          {/* 남은 포인트 스켈레톤 */}
+          <styled.div
+            css={{
+              w: '32px',
+              h: '16px',
+              rounded: 'md',
+              bg: 'background.02_light-gray',
+              animation: 'skeleton-pulse',
+            }}
+          ></styled.div>
+        </Box>
+      </Flex>
+    </Flex>
+  );
+}

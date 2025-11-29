@@ -2,7 +2,7 @@ import type { ExchangeRate } from '@/hooks/queries/exchange';
 import type { CurrencyType } from '@/ui-lib';
 
 /**
- * 현재 화폐와 환율에 맞는 가격 string(단위 포함)을 반환
+ * 현재 통화와 환율에 맞는 가격 string(단위 포함)을 반환
  * @param priceInUSD USD 기준의 가격
  * @param currency 현재 화폐 통화
  * @param exchangeRate 환율
