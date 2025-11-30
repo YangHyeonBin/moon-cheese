@@ -5,7 +5,7 @@ import { CurrencyProvider } from './CurrencyProvider';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: false,
+      retry: 2,
     },
   },
 });
