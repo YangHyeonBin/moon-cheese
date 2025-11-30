@@ -20,16 +20,8 @@ export default function RecentPurchaseSection() {
     queries.filter(q => q.error && isServerError(q.error)).forEach(q => q.refetch());
   };
 
-  if (hasServerError) {
-    return <ErrorSection onRetry={refetchFailed} />;
-  }
-
   const recentProductList = recentProductListQuery.data;
   const exchangeRate = exchangeRateQuery.data;
-
-  if (!recentProductList || !exchangeRate) {
-    console.warn('조회된 데이터가 없습니다.');
-  }
 
   return (
     <styled.section css={{ px: 5, pt: 4, pb: 8 }}>
@@ -47,7 +39,9 @@ export default function RecentPurchaseSection() {
         }}
         direction={'column'}
       >
-        {!recentProductList ? (
+        {hasServerError ? (
+          <ErrorSection onRetry={refetchFailed} />
+        ) : !recentProductList ? (
           <RecentPurchaseSkeleton />
         ) : (
           recentProductList.map(product => {

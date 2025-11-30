@@ -51,17 +51,8 @@ export default function CurrentLevelSection() {
     queries.filter(q => q.error && isServerError(q.error)).forEach(q => q.refetch());
   };
 
-  if (hasServerError) {
-    return <ErrorSection onRetry={refetchFailed} />;
-  }
-
   const my = myQuery.data;
   const gradePoint = gradePointQuery.data;
-
-  // if (!my || !gradePoint) {
-  //   console.warn('조회된 데이터가 없습니다.');
-  //   return null;
-  // }
 
   return (
     <styled.section css={{ px: 5, py: 4 }}>
@@ -70,7 +61,9 @@ export default function CurrentLevelSection() {
       <Spacing size={4} />
 
       <Box bg="background.01_white" css={{ px: 5, py: 4, rounded: '2xl' }}>
-        {!my || !gradePoint ? (
+        {hasServerError ? (
+          <ErrorSection onRetry={refetchFailed} />
+        ) : !my || !gradePoint ? (
           <CurrentLevelSkeleton />
         ) : (
           <Flex flexDir="column" gap={2}>
