@@ -1,10 +1,14 @@
 import { Box, Flex, styled } from 'styled-system/jsx';
 import { ProgressBar, Spacing, Text } from '@/ui-lib';
-import { useMe, type MeResponse } from '@/hooks/queries/user';
-import { isServerError } from '@/utils/error';
 import ErrorSection from '@/components/ErrorSection';
 import { GRADE_DISPLAY_NAME } from '@/constants/grade';
-import { useGradePoint, type GradePoint } from '@/hooks/queries/grade';
+import { userQueries } from '@/remotes/queries/user';
+import { gradePointQueries } from '@/remotes/queries/grade';
+import { ErrorBoundary } from '@suspensive/react';
+import { Suspense, type ReactNode } from 'react';
+import type { MeResponse } from '@/remotes/user';
+import type { GradePoint } from '@/remotes/grade';
+import { useSuspenseQueries } from '@tanstack/react-query';
 
 /**
  * 유저의 현재 등급을 받아 다음 등급을 찾는 함수
@@ -39,21 +43,8 @@ const getNextGradeInfo = (
   };
 };
 
-export default function CurrentLevelSection() {
-  const myQuery = useMe();
-  const gradePointQuery = useGradePoint();
-
-  const queries = [myQuery, gradePointQuery];
-
-  // const isLoading = queries.some(q => q.isLoading);
-  const hasServerError = queries.some(q => q.error && isServerError(q.error));
-  const refetchFailed = () => {
-    queries.filter(q => q.error && isServerError(q.error)).forEach(q => q.refetch());
-  };
-
-  const my = myQuery.data;
-  const gradePoint = gradePointQuery.data;
-
+// 레이아웃 컴포넌트
+const SectionWrapper = ({ children }: { children: ReactNode }) => {
   return (
     <styled.section css={{ px: 5, py: 4 }}>
       <Text variant="H1_Bold">현재 등급</Text>
@@ -61,81 +52,103 @@ export default function CurrentLevelSection() {
       <Spacing size={4} />
 
       <Box bg="background.01_white" css={{ px: 5, py: 4, rounded: '2xl' }}>
-        {hasServerError ? (
-          <ErrorSection onRetry={refetchFailed} />
-        ) : !my || !gradePoint ? (
-          <CurrentLevelSkeleton />
-        ) : (
-          <Flex flexDir="column" gap={2}>
-            <Text variant="H2_Bold">{GRADE_DISPLAY_NAME[my.grade]}</Text>
-
-            <ProgressBar value={getNextGradeInfo(my, gradePoint).progress} size="xs" />
-
-            <Flex justifyContent="space-between">
-              <Box textAlign="left">
-                <Text variant="C1_Bold">현재 포인트</Text>
-                <Text variant="C2_Regular" color="neutral.03_gray">
-                  {my.point}p
-                </Text>
-              </Box>
-              <Box textAlign="right">
-                <Text variant="C1_Bold">다음 등급까지</Text>
-                <Text variant="C2_Regular" color="neutral.03_gray">
-                  {getNextGradeInfo(my, gradePoint).pointsNeeded}p
-                </Text>
-              </Box>
-            </Flex>
-          </Flex>
-        )}
+        {children}
       </Box>
     </styled.section>
   );
-}
+};
 
-function CurrentLevelSkeleton() {
+// 스켈레톤 컴포넌트
+const CurrentLevelSkeleton = () => {
   return (
-    <Flex flexDir="column" gap={2}>
-      {/* 등급 이름 스켈레톤 */}
-      <styled.div
-        css={{
-          w: '80px',
-          h: '24px',
-          rounded: 'md',
-          bg: 'background.02_light-gray',
-          animation: 'skeleton-pulse',
-        }}
-      ></styled.div>
+    <SectionWrapper>
+      <Flex flexDir="column" gap={2}>
+        {/* 등급 이름 스켈레톤 */}
+        <styled.div
+          css={{
+            w: '80px',
+            h: '24px',
+            rounded: 'md',
+            bg: 'background.02_light-gray',
+            animation: 'skeleton-pulse',
+          }}
+        ></styled.div>
 
-      <ProgressBar value={0} size="xs" />
+        <ProgressBar value={0} size="xs" />
 
-      <Flex justifyContent="space-between">
-        <Box textAlign="left">
-          <Text variant="C1_Bold">현재 포인트</Text>
-          {/* 현재 포인트 스켈레톤 */}
-          <styled.div
-            css={{
-              w: '32px',
-              h: '16px',
-              rounded: 'md',
-              bg: 'background.02_light-gray',
-              animation: 'skeleton-pulse',
-            }}
-          ></styled.div>
-        </Box>
-        <Box textAlign="right">
-          <Text variant="C1_Bold">다음 등급까지</Text>
-          {/* 남은 포인트 스켈레톤 */}
-          <styled.div
-            css={{
-              w: '32px',
-              h: '16px',
-              rounded: 'md',
-              bg: 'background.02_light-gray',
-              animation: 'skeleton-pulse',
-            }}
-          ></styled.div>
-        </Box>
+        <Flex justifyContent="space-between">
+          <Box textAlign="left">
+            <Text variant="C1_Bold">현재 포인트</Text>
+            {/* 현재 포인트 스켈레톤 */}
+            <styled.div
+              css={{
+                w: '32px',
+                h: '16px',
+                rounded: 'md',
+                bg: 'background.02_light-gray',
+                animation: 'skeleton-pulse',
+              }}
+            ></styled.div>
+          </Box>
+          <Box textAlign="right">
+            <Text variant="C1_Bold">다음 등급까지</Text>
+            {/* 남은 포인트 스켈레톤 */}
+            <styled.div
+              css={{
+                w: '32px',
+                h: '16px',
+                rounded: 'md',
+                bg: 'background.02_light-gray',
+                animation: 'skeleton-pulse',
+              }}
+            ></styled.div>
+          </Box>
+        </Flex>
       </Flex>
-    </Flex>
+    </SectionWrapper>
   );
-}
+};
+
+const CurrentLevelSectionContainer = () => {
+  const [{ data: me }, { data: gradePoint }] = useSuspenseQueries({
+    queries: [userQueries.me(), gradePointQueries.gradePoint()],
+  });
+
+  return (
+    <SectionWrapper>
+      <Flex flexDir="column" gap={2}>
+        <Text variant="H2_Bold">{GRADE_DISPLAY_NAME[me.grade]}</Text>
+
+        <ProgressBar value={getNextGradeInfo(me, gradePoint).progress} size="xs" />
+
+        <Flex justifyContent="space-between">
+          <Box textAlign="left">
+            <Text variant="C1_Bold">현재 포인트</Text>
+            <Text variant="C2_Regular" color="neutral.03_gray">
+              {me.point}p
+            </Text>
+          </Box>
+          <Box textAlign="right">
+            <Text variant="C1_Bold">다음 등급까지</Text>
+            <Text variant="C2_Regular" color="neutral.03_gray">
+              {getNextGradeInfo(me, gradePoint).pointsNeeded}p
+            </Text>
+          </Box>
+        </Flex>
+      </Flex>
+    </SectionWrapper>
+  );
+};
+
+const CurrentLevelSection = ErrorBoundary.with(
+  {
+    fallback: ({ reset }) => <ErrorSection onRetry={reset} />,
+  },
+  () => (
+    <Suspense fallback={<CurrentLevelSkeleton />}>
+      <CurrentLevelSectionContainer />
+    </Suspense>
+  )
+);
+
+export default CurrentLevelSection;

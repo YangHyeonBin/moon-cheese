@@ -1,0 +1,21 @@
+import { queryOptions } from '@tanstack/react-query';
+import { getProductList, getRecentProductList } from '../product';
+
+export const productQueries = {
+  // 쿼리 키
+  recentProductListKey: () => ['recent', 'product', 'list'],
+  productListKey: () => ['product', 'list'],
+
+  // 쿼리 옵션
+  recentProductList: () =>
+    queryOptions({
+      queryKey: productQueries.recentProductListKey(),
+      queryFn: getRecentProductList,
+    }),
+
+  productList: () =>
+    queryOptions({
+      queryKey: productQueries.productListKey(),
+      queryFn: getProductList,
+    }),
+};
