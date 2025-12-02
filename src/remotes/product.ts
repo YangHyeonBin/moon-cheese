@@ -1,3 +1,4 @@
+import type { Category } from '@/constants/category';
 import { http } from '@/utils/http';
 
 type RecentProduct = {
@@ -10,7 +11,7 @@ type RecentProduct = {
 type Product = {
   id: number;
   name: string;
-  category: 'CHEESE' | 'CRACKER' | 'TEA';
+  category: Category;
   stock: number;
   price: number;
   description: string;

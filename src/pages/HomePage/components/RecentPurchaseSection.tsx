@@ -97,13 +97,13 @@ const RecentPurchaseSectionContainer = () => {
         {recentProducts.map(product => {
           return (
             <Flex
-              key={product?.id}
+              key={product.id}
               css={{
                 gap: 4,
               }}
             >
               <styled.img
-                src={product?.thumbnail}
+                src={product.thumbnail}
                 alt="item"
                 css={{
                   w: '60px',
@@ -113,8 +113,8 @@ const RecentPurchaseSectionContainer = () => {
                 }}
               />
               <Flex flexDir="column" gap={1}>
-                <Text variant="B2_Medium">{product?.name}</Text>
-                <Text variant="H1_Bold">{formatPrice(product?.price, currency, exchangeRate)}</Text>
+                <Text variant="B2_Medium">{product.name}</Text>
+                <Text variant="H1_Bold">{formatPrice(product.price, currency, exchangeRate)}</Text>
               </Flex>
             </Flex>
           );

@@ -1,12 +1,92 @@
 import { Counter, SubGNB, Text } from '@/ui-lib';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Box, Grid, styled } from 'styled-system/jsx';
+import { Box, Grid, Stack, styled } from 'styled-system/jsx';
 import ProductItem from '../components/ProductItem';
+import { productQueries } from '@/remotes/queries/product';
+import { useSuspenseQueries } from '@tanstack/react-query';
+import { ErrorBoundary } from '@suspensive/react';
+import ErrorSection from '@/components/ErrorSection';
 
-function ProductListSection() {
+// 스켈레톤 컴포넌트
+const ProductListSkeleton = () => {
+  return (
+    <styled.section bg="background.01_white">
+      <Box css={{ px: 5, pt: 5, pb: 4 }}>
+        <Text variant="H1_Bold">판매 중인 상품</Text>
+      </Box>
+      {/* gnb 생략 */}
+      <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
+        {[1, 2, 3, 4].map(i => (
+          <Stack key={i}>
+            {/* 이미지 */}
+            <styled.div
+              css={{
+                w: '100%',
+                aspectRatio: '1',
+                rounded: 'xl',
+                bg: 'background.02_light-gray',
+                animation: 'skeleton-pulse',
+              }}
+            />
+            {/* 제목 */}
+            <styled.div
+              css={{ w: '80%', h: '20px', rounded: 'md', bg: 'background.02_light-gray', animation: 'skeleton-pulse' }}
+            />
+            {/* 설명 */}
+            <styled.div
+              css={{
+                w: '60%',
+                h: '16px',
+                rounded: 'md',
+                bg: 'background.02_light-gray',
+                animation: 'skeleton-pulse',
+              }}
+            />
+
+            {/* 별점 + 가격 */}
+            <Stack justify="space-between">
+              <styled.div
+                css={{
+                  w: '50px',
+                  h: '16px',
+                  rounded: 'md',
+                  bg: 'background.02_light-gray',
+                  animation: 'skeleton-pulse',
+                }}
+              />
+              <styled.div
+                css={{
+                  w: '40%',
+                  h: '20px',
+                  rounded: 'md',
+                  bg: 'background.02_light-gray',
+                  animation: 'skeleton-pulse',
+                }}
+              />
+            </Stack>
+            {/* 카운터 */}
+            <styled.div
+              css={{
+                w: '100%',
+                h: '36px',
+                rounded: 'lg',
+                bg: 'background.02_light-gray',
+                animation: 'skeleton-pulse',
+              }}
+            />
+          </Stack>
+        ))}
+      </Grid>
+    </styled.section>
+  );
+};
+
+// 데이터 패칭 컨테이너
+const ProductListSectionContainer = () => {
   const [currentTab, setCurrentTab] = useState('all');
   const navigate = useNavigate();
+  const [{ data: productList }] = useSuspenseQueries({ queries: [productQueries.productList()] });
 
   const handleClickProduct = (productId: number) => {
     navigate(`/product/${productId}`);
@@ -15,7 +95,7 @@ function ProductListSection() {
   return (
     <styled.section bg="background.01_white">
       <Box css={{ px: 5, pt: 5, pb: 4 }}>
-        <Text variant="H1_Bold">판매중인 상품</Text>
+        <Text variant="H1_Bold">판매 중인 상품</Text>
       </Box>
       <SubGNB.Root value={currentTab} onValueChange={details => setCurrentTab(details.value)}>
         <SubGNB.List>
@@ -26,58 +106,39 @@ function ProductListSection() {
         </SubGNB.List>
       </SubGNB.Root>
       <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
-        <ProductItem.Root onClick={() => handleClickProduct(1)}>
-          <ProductItem.Image src="/moon-cheese-images/cheese-1-1.jpg" alt="월레스의 오리지널 웬슬리데일" />
-          <ProductItem.Info title="월레스의 오리지널 웬슬리데일" description="월레스가 아침마다 찾는 바로 그 치즈!" />
-          <ProductItem.Meta>
-            <ProductItem.MetaLeft>
-              <ProductItem.Rating rating={4} />
-              <ProductItem.Price>$12.99</ProductItem.Price>
-            </ProductItem.MetaLeft>
-          </ProductItem.Meta>
-          <Counter.Root>
-            <Counter.Minus onClick={() => {}} disabled={true} />
-            <Counter.Display value={3} />
-            <Counter.Plus onClick={() => {}} />
-          </Counter.Root>
-        </ProductItem.Root>
-
-        <ProductItem.Root onClick={() => handleClickProduct(2)}>
-          <ProductItem.Image src="/moon-cheese-images/cracker-1-1.jpg" alt="로봇 크런치 비스킷" />
-          <ProductItem.Info title="로봇 크런치 비스킷" description="로봇 캐릭터 모양의 귀리 비스킷" />
-          <ProductItem.Meta>
-            <ProductItem.MetaLeft>
-              <ProductItem.Rating rating={3} />
-              <ProductItem.Price>5.00</ProductItem.Price>
-            </ProductItem.MetaLeft>
-            <ProductItem.FreeTag type="gluten" />
-          </ProductItem.Meta>
-          <Counter.Root>
-            <Counter.Minus onClick={() => {}} disabled={true} />
-            <Counter.Display value={3} />
-            <Counter.Plus onClick={() => {}} />
-          </Counter.Root>
-        </ProductItem.Root>
-
-        <ProductItem.Root onClick={() => handleClickProduct(3)}>
-          <ProductItem.Image src="/moon-cheese-images/tea-1-1.jpg" alt="문라이트 카모마일 티" />
-          <ProductItem.Info title="문라이트 카모마일 티" description="달빛 같은 부드러운 허브차" />
-          <ProductItem.Meta>
-            <ProductItem.MetaLeft>
-              <ProductItem.Rating rating={5} />
-              <ProductItem.Price>$7.00</ProductItem.Price>
-            </ProductItem.MetaLeft>
-            <ProductItem.FreeTag type="caffeine" />
-          </ProductItem.Meta>
-          <Counter.Root>
-            <Counter.Minus onClick={() => {}} disabled={true} />
-            <Counter.Display value={3} />
-            <Counter.Plus onClick={() => {}} />
-          </Counter.Root>
-        </ProductItem.Root>
+        {productList.map(product => (
+          <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
+            {product.images.length > 0 && <ProductItem.Image src={product.images[0]} alt={product.name} />}
+            <ProductItem.Info title={product.name} description={product.description} />
+            <ProductItem.Meta>
+              <ProductItem.MetaLeft>
+                <ProductItem.Rating rating={product.rating} />
+                <ProductItem.Price>${product.price}</ProductItem.Price>
+              </ProductItem.MetaLeft>
+              {product.isGlutenFree && <ProductItem.FreeTag type="gluten" />}
+              {product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />}
+            </ProductItem.Meta>
+            <Counter.Root>
+              <Counter.Minus onClick={() => {}} disabled={true} />
+              <Counter.Display value={3} />
+              <Counter.Plus onClick={() => {}} />
+            </Counter.Root>
+          </ProductItem.Root>
+        ))}
       </Grid>
     </styled.section>
   );
-}
+};
+
+const ProductListSection = ErrorBoundary.with(
+  {
+    fallback: ({ reset }) => <ErrorSection onRetry={reset} />,
+  },
+  () => (
+    <Suspense fallback={<ProductListSkeleton />}>
+      <ProductListSectionContainer />
+    </Suspense>
+  )
+);
 
 export default ProductListSection;
