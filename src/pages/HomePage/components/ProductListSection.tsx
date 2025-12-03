@@ -7,6 +7,23 @@ import { productQueries } from '@/remotes/queries/product';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import { ErrorBoundary } from '@suspensive/react';
 import ErrorSection from '@/components/ErrorSection';
+import type { Product } from '@/remotes/product';
+
+// 태그 컴포넌트 조건부 렌더링 함수
+function renderFreeTags(product: Product) {
+  switch (product.category) {
+    case 'CHEESE':
+      return null;
+    case 'CRACKER':
+      return product.isGlutenFree && <ProductItem.FreeTag type="gluten" />;
+    case 'TEA':
+      return product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />;
+    default: {
+      const _exhaustiveCheck: never = product; // 처리되지 않은 타입이 있을 경우 경고 띄우기 위함
+      return _exhaustiveCheck;
+    }
+  }
+}
 
 // 스켈레톤 컴포넌트
 const ProductListSkeleton = () => {
@@ -115,8 +132,7 @@ const ProductListSectionContainer = () => {
                 <ProductItem.Rating rating={product.rating} />
                 <ProductItem.Price>${product.price}</ProductItem.Price>
               </ProductItem.MetaLeft>
-              {product.isGlutenFree && <ProductItem.FreeTag type="gluten" />}
-              {product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />}
+              {renderFreeTags(product)}
             </ProductItem.Meta>
             <Counter.Root>
               <Counter.Minus onClick={() => {}} disabled={true} />
