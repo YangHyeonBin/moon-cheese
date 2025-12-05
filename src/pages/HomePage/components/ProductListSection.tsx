@@ -8,6 +8,9 @@ import { useSuspenseQueries } from '@tanstack/react-query';
 import { ErrorBoundary } from '@suspensive/react';
 import ErrorSection from '@/components/ErrorSection';
 import type { Product } from '@/remotes/product';
+import { useCurrency } from '@/providers/CurrencyProvider';
+import { exchangeQueries } from '@/remotes/queries/exchange';
+import { formatPrice } from '@/utils/price';
 
 // 태그 컴포넌트 조건부 렌더링 함수
 function renderFreeTags(product: Product) {
@@ -103,7 +106,11 @@ const ProductListSkeleton = () => {
 const ProductListSectionContainer = () => {
   const [currentTab, setCurrentTab] = useState('all');
   const navigate = useNavigate();
-  const [{ data: productList }] = useSuspenseQueries({ queries: [productQueries.productList()] });
+
+  const { currency } = useCurrency();
+  const [{ data: productList }, { data: exchangeRate }] = useSuspenseQueries({
+    queries: [productQueries.productList(), exchangeQueries.exchangeRate()],
+  });
 
   const handleClickProduct = (productId: number) => {
     navigate(`/product/${productId}`);
@@ -130,13 +137,13 @@ const ProductListSectionContainer = () => {
             <ProductItem.Meta>
               <ProductItem.MetaLeft>
                 <ProductItem.Rating rating={product.rating} />
-                <ProductItem.Price>${product.price}</ProductItem.Price>
+                <ProductItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ProductItem.Price>
               </ProductItem.MetaLeft>
               {renderFreeTags(product)}
             </ProductItem.Meta>
             <Counter.Root>
               <Counter.Minus onClick={() => {}} disabled={true} />
-              <Counter.Display value={3} />
+              <Counter.Display value={product.stock} />
               <Counter.Plus onClick={() => {}} />
             </Counter.Root>
           </ProductItem.Root>
