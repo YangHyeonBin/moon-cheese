@@ -30,40 +30,39 @@ const ShoppingCartProvider = ({ children }: { children: ReactNode }) => {
   const [shoppingCartItems, setShoppingCartItems] = useState<CartItem[]>([]);
 
   const addToShoppingCart = (product: Product, quantity = 1) => {
-    const existingItem = shoppingCartItems.find(item => item.product.id === product.id);
+    setShoppingCartItems(prev => {
+      const existingItem = shoppingCartItems.find(item => item.product.id === product.id);
 
-    if (existingItem) {
-      // 수량만 조정
-      const newCartItems = shoppingCartItems.map(item =>
-        item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
-      );
-      setShoppingCartItems(newCartItems);
-    } else {
-      // 새 아이템 추가
-      const newCartItems = [...shoppingCartItems, { product, quantity: quantity }];
-      setShoppingCartItems(newCartItems);
-    }
+      if (existingItem) {
+        // 수량만 조정
+        return prev.map(item =>
+          item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+        );
+      } else {
+        // 새 아이템 추가
+        return [...prev, { product, quantity }];
+      }
+    });
   };
 
   const removeFromShoppingCart = (productId: number, quantity?: number) => {
-    const product = shoppingCartItems.find(item => item.product.id === productId);
+    setShoppingCartItems(prev => {
+      const existingItem = prev.find(item => item.product.id === productId);
 
-    if (!product) {
-      return;
-    }
+      if (!existingItem) {
+        return prev;
+      }
 
-    const newQuantity = quantity && product.quantity - quantity > 0 ? product.quantity - quantity : 0;
-    if (newQuantity === 0) {
-      // 아이템 삭제
-      const newCartItems = shoppingCartItems.filter(item => item.product.id !== productId);
-      setShoppingCartItems(newCartItems);
-    } else {
-      // 수량만 조정
-      const newCartItems = shoppingCartItems.map(item =>
-        item.product.id === productId ? { ...item, quantity: newQuantity } : item
-      );
-      setShoppingCartItems(newCartItems);
-    }
+      const newQuantity = quantity ? existingItem.quantity - quantity : 0;
+
+      if (newQuantity > 0) {
+        // 수량만 조정
+        return prev.map(item => (item.product.id === productId ? { ...item, quantity: newQuantity } : item));
+      } else {
+        // 아이템 삭제
+        return prev.filter(item => item.product.id !== productId);
+      }
+    });
   };
 
   return (
