@@ -11,6 +11,8 @@ import type { Product } from '@/remotes/product';
 import { useCurrency } from '@/providers/CurrencyProvider';
 import { exchangeQueries } from '@/remotes/queries/exchange';
 import { formatPrice } from '@/utils/price';
+import { useShoppingCartActions, useShoppingCartState } from '@/providers/ShoppingCartProvider';
+import { getAvailableStock } from '@/utils/stock';
 
 // 태그 컴포넌트 조건부 렌더링 함수
 function renderFreeTags(product: Product) {
@@ -108,12 +110,23 @@ const ProductListSectionContainer = () => {
   const navigate = useNavigate();
 
   const { currency } = useCurrency();
+  const { items: cartItems } = useShoppingCartState();
+  const { addToShoppingCart, removeFromShoppingCart } = useShoppingCartActions();
+
   const [{ data: productList }, { data: exchangeRate }] = useSuspenseQueries({
     queries: [productQueries.productList(), exchangeQueries.exchangeRate()],
   });
 
   const handleClickProduct = (productId: number) => {
     navigate(`/product/${productId}`);
+  };
+
+  const handleAddToCart = (product: Product) => {
+    addToShoppingCart(product);
+  };
+
+  const handleRemoveFromCart = (product: Product) => {
+    removeFromShoppingCart(product.id, 1);
   };
 
   return (
@@ -130,24 +143,33 @@ const ProductListSectionContainer = () => {
         </SubGNB.List>
       </SubGNB.Root>
       <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
-        {productList.map(product => (
-          <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
-            {product.images.length > 0 && <ProductItem.Image src={product.images[0]} alt={product.name} />}
-            <ProductItem.Info title={product.name} description={product.description} />
-            <ProductItem.Meta>
-              <ProductItem.MetaLeft>
-                <ProductItem.Rating rating={product.rating} />
-                <ProductItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ProductItem.Price>
-              </ProductItem.MetaLeft>
-              {renderFreeTags(product)}
-            </ProductItem.Meta>
-            <Counter.Root>
-              <Counter.Minus onClick={() => {}} disabled={true} />
-              <Counter.Display value={product.stock} />
-              <Counter.Plus onClick={() => {}} />
-            </Counter.Root>
-          </ProductItem.Root>
-        ))}
+        {productList.map(product => {
+          const availableStock = getAvailableStock(product, cartItems);
+
+          return (
+            <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
+              {product.images.length > 0 && <ProductItem.Image src={product.images[0]} alt={product.name} />}
+              <ProductItem.Info title={product.name} description={product.description} />
+              <ProductItem.Meta>
+                <ProductItem.MetaLeft>
+                  <ProductItem.Rating rating={product.rating} />
+                  <ProductItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ProductItem.Price>
+                </ProductItem.MetaLeft>
+                {renderFreeTags(product)}
+              </ProductItem.Meta>
+              <Counter.Root>
+                <Counter.Minus
+                  onClick={() => {
+                    handleRemoveFromCart(product);
+                  }}
+                  disabled={availableStock >= product.stock} // 원본 재고와 같으면 담은 게 없다는 뜻이므로
+                />
+                <Counter.Display value={availableStock} />
+                <Counter.Plus onClick={() => handleAddToCart(product)} disabled={availableStock <= 0} />
+              </Counter.Root>
+            </ProductItem.Root>
+          );
+        })}
       </Grid>
     </styled.section>
   );

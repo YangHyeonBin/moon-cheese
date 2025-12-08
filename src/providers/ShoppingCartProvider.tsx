@@ -1,7 +1,7 @@
 import type { Product } from '@/remotes/product';
 import { createContext, useContext, useState, type ReactNode } from 'react';
 
-type CartItem = {
+export type CartItem = {
   product: Product;
   quantity: number;
 };
@@ -15,6 +15,7 @@ type ShoppingCartActions = {
   removeFromShoppingCart: (productId: number, quantity?: number) => void; // 수량 넘기지 않을 경우 기본 동작: 전체 삭제
 };
 
+// State, Action을 분리하여 정의함으로써, 액션만 사용하는 컴포넌트는 State가 변경되어도 리렌더링되지 않도록 설계
 // States
 const shoppingCartContext = createContext<ShoppingCartState>({
   items: [],
@@ -74,12 +75,12 @@ const ShoppingCartProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-const useShoppingCart = () => {
+const useShoppingCartState = () => {
   return useContext(shoppingCartContext);
 };
 
-const useSetShoppingCart = () => {
+const useShoppingCartActions = () => {
   return useContext(shoppingCartActionContext);
 };
 
-export { ShoppingCartProvider, useShoppingCart, useSetShoppingCart };
+export { ShoppingCartProvider, useShoppingCartState, useShoppingCartActions };
