@@ -25,8 +25,7 @@ function renderFreeTags(product: Product) {
     case 'TEA':
       return product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />;
     default: {
-      const _exhaustiveCheck: never = product; // 처리되지 않은 타입이 있을 경우 경고 띄우기 위함
-      return _exhaustiveCheck;
+      return product satisfies never;
     }
   }
 }
