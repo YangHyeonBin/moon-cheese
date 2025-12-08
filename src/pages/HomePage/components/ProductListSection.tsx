@@ -1,7 +1,7 @@
 import { Counter, SubGNB, Text } from '@/ui-lib';
 import { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Box, Grid, Stack, styled } from 'styled-system/jsx';
+import { Box, Center, Grid, Stack, styled } from 'styled-system/jsx';
 import ProductItem from '../components/ProductItem';
 import { productQueries } from '@/remotes/queries/product';
 import { useSuspenseQueries } from '@tanstack/react-query';
@@ -13,6 +13,7 @@ import { exchangeQueries } from '@/remotes/queries/exchange';
 import { formatPrice } from '@/utils/price';
 import { useShoppingCartActions, useShoppingCartState } from '@/providers/ShoppingCartProvider';
 import { getAvailableStock } from '@/utils/stock';
+import type { ExchangeRate } from '@/remotes/exchange';
 
 // 태그 컴포넌트 조건부 렌더링 함수
 function renderFreeTags(product: Product) {
@@ -104,18 +105,24 @@ const ProductListSkeleton = () => {
   );
 };
 
-// 데이터 패칭 컨테이너
-const ProductListSectionContainer = () => {
-  const [currentTab, setCurrentTab] = useState('all');
+// 제품이 없을 경우 컴포넌트
+const EmptyProductListContainer = () => {
+  return (
+    <Center py={10}>
+      <Text variant="B2_Regular" color="text.02_gray">
+        표시할 상품이 없습니다
+      </Text>
+    </Center>
+  );
+};
+
+// 제품 목록 컴포넌트
+const ProductGrid = ({ products, exchangeRate }: { products: Product[]; exchangeRate: ExchangeRate }) => {
   const navigate = useNavigate();
 
   const { currency } = useCurrency();
   const { items: cartItems } = useShoppingCartState();
   const { addToShoppingCart, removeFromShoppingCart } = useShoppingCartActions();
-
-  const [{ data: productList }, { data: exchangeRate }] = useSuspenseQueries({
-    queries: [productQueries.productList(), exchangeQueries.exchangeRate()],
-  });
 
   const handleClickProduct = (productId: number) => {
     navigate(`/product/${productId}`);
@@ -127,6 +134,58 @@ const ProductListSectionContainer = () => {
 
   const handleRemoveFromCart = (product: Product) => {
     removeFromShoppingCart(product.id, 1);
+  };
+
+  return (
+    <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
+      {products.map(product => {
+        const availableStock = getAvailableStock(product, cartItems);
+
+        return (
+          <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
+            {product.images.length > 0 && <ProductItem.Image src={product.images[0]} alt={product.name} />}
+            <ProductItem.Info title={product.name} description={product.description} />
+            <ProductItem.Meta>
+              <ProductItem.MetaLeft>
+                <ProductItem.Rating rating={product.rating} />
+                <ProductItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ProductItem.Price>
+              </ProductItem.MetaLeft>
+              {renderFreeTags(product)}
+            </ProductItem.Meta>
+            <Counter.Root>
+              <Counter.Minus
+                onClick={() => {
+                  handleRemoveFromCart(product);
+                }}
+                disabled={availableStock >= product.stock} // 원본 재고와 같으면 담은 게 없다는 뜻이므로
+              />
+              <Counter.Display value={availableStock} />
+              <Counter.Plus onClick={() => handleAddToCart(product)} disabled={availableStock <= 0} />
+            </Counter.Root>
+          </ProductItem.Root>
+        );
+      })}
+    </Grid>
+  );
+};
+
+// 데이터 패칭 컨테이너
+const ProductListContainer = () => {
+  const [currentTab, setCurrentTab] = useState('all');
+
+  const [{ data: productList }, { data: exchangeRate }] = useSuspenseQueries({
+    queries: [productQueries.productList(), exchangeQueries.exchangeRate()],
+  });
+
+  const filteredProductList =
+    currentTab === 'all' ? productList : productList.filter(p => p.category.toLowerCase() === currentTab);
+
+  const renderProductList = () => {
+    return filteredProductList.length === 0 ? (
+      <EmptyProductListContainer />
+    ) : (
+      <ProductGrid products={filteredProductList} exchangeRate={exchangeRate} />
+    );
   };
 
   return (
@@ -142,35 +201,8 @@ const ProductListSectionContainer = () => {
           <SubGNB.Trigger value="tea">티</SubGNB.Trigger>
         </SubGNB.List>
       </SubGNB.Root>
-      <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
-        {productList.map(product => {
-          const availableStock = getAvailableStock(product, cartItems);
 
-          return (
-            <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
-              {product.images.length > 0 && <ProductItem.Image src={product.images[0]} alt={product.name} />}
-              <ProductItem.Info title={product.name} description={product.description} />
-              <ProductItem.Meta>
-                <ProductItem.MetaLeft>
-                  <ProductItem.Rating rating={product.rating} />
-                  <ProductItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ProductItem.Price>
-                </ProductItem.MetaLeft>
-                {renderFreeTags(product)}
-              </ProductItem.Meta>
-              <Counter.Root>
-                <Counter.Minus
-                  onClick={() => {
-                    handleRemoveFromCart(product);
-                  }}
-                  disabled={availableStock >= product.stock} // 원본 재고와 같으면 담은 게 없다는 뜻이므로
-                />
-                <Counter.Display value={availableStock} />
-                <Counter.Plus onClick={() => handleAddToCart(product)} disabled={availableStock <= 0} />
-              </Counter.Root>
-            </ProductItem.Root>
-          );
-        })}
-      </Grid>
+      {renderProductList()}
     </styled.section>
   );
 };
@@ -181,7 +213,7 @@ const ProductListSection = ErrorBoundary.with(
   },
   () => (
     <Suspense fallback={<ProductListSkeleton />}>
-      <ProductListSectionContainer />
+      <ProductListContainer />
     </Suspense>
   )
 );
