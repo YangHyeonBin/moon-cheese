@@ -11,6 +11,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getAvailableStock } from '@/utils/stock';
 import type { Product } from '@/remotes/product';
 import Tooltip from '@/ui-lib/components/tooltip';
+import ConfirmModal from '@/ui-lib/components/confirm-modal';
+import { toast } from '@/ui-lib/components/toast';
 
 // 가격 표시 컴포넌트 스켈레톤
 const PriceSkeleton = () => {
@@ -90,21 +92,23 @@ const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
 
   const handleRemoveAllFromCart = () => {
     cartItems.forEach(item => removeFromShoppingCart(item.product.id));
+    toast.success('장바구니를 비웠습니다.');
   };
 
   return (
     <styled.section css={{ p: 5, bgColor: 'background.01_white' }}>
       <Flex justify="space-between">
         <Text variant="H2_Bold">장바구니</Text>
-        <Button
-          color={'neutral'}
-          size="sm"
-          onClick={() => {
-            handleRemoveAllFromCart();
-          }}
-        >
-          전체 삭제
-        </Button>
+        <ConfirmModal
+          trigger={
+            <Button color={'neutral'} size="sm">
+              전체 삭제
+            </Button>
+          }
+          title="장바구니 비우기"
+          description="장바구니의 모든 상품을 삭제할까요?"
+          onConfirm={handleRemoveAllFromCart}
+        />
       </Flex>
       <Spacing size={4} />
       <Stack
@@ -132,6 +136,7 @@ const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
                     description={item.product.description}
                     onDelete={() => {
                       removeFromShoppingCart(item.product.id);
+                      toast.success(`${item.product.name}(이)가 삭제되었습니다.`);
                     }}
                   />
                   <ShoppingCartItem.Footer>
