@@ -6,11 +6,11 @@ type ProductInfoSectionProps = {
   name: string;
   category: TagType;
   rating: number;
-  price: number;
+  formattedPrice: string;
   quantity: number;
 };
 
-function ProductInfoSection({ name, category, rating, price, quantity }: ProductInfoSectionProps) {
+function ProductInfoSection({ name, category, rating, formattedPrice, quantity }: ProductInfoSectionProps) {
   return (
     <styled.section css={{ bg: 'background.01_white', p: 5 }}>
       {/* 상품 정보 */}
@@ -21,7 +21,7 @@ function ProductInfoSection({ name, category, rating, price, quantity }: Product
           <RatingGroup value={rating} readOnly label={`${rating.toFixed(1)}`} />
         </Stack>
         <Spacing size={4} />
-        <Text variant="H1_Bold">${price.toFixed(2)}</Text>
+        <Text variant="H1_Bold">{formattedPrice}</Text>
       </Box>
 
       <Spacing size={5} />
