@@ -8,59 +8,25 @@ import { formatPrice } from '@/utils/price';
 import { useCurrency } from '@/providers/CurrencyProvider';
 import { exchangeQueryOptions } from '@/remotes/queries/exchange';
 import { useQuery } from '@tanstack/react-query';
-import { getAvailableStock } from '@/utils/stock';
 import type { Product } from '@/remotes/product';
 import Tooltip from '@/ui-lib/components/tooltip';
 import ConfirmModal from '@/ui-lib/components/confirm-modal';
 import { toast } from '@/ui-lib/components/toast';
 import EmptyCartSection from './EmptyCartSection';
 
-// 가격 표시 컴포넌트 스켈레톤
-const PriceSkeleton = () => {
-  return (
-    <styled.div
-      css={{
-        w: '80px',
-        h: '20px',
-        rounded: 'md',
-        bg: 'background.02_light-gray',
-        animation: 'skeleton-pulse',
-      }}
-    />
-  );
-};
+function ShoppingCartSection() {
+  const { items } = useShoppingCartState();
 
-// 가격 표시 컴포넌트 (환율 정보 패치)
-const ShoppingCartItemPrice = ({ product }: { product: Product }) => {
-  const { currency } = useCurrency();
-  const { data: exchangeRate, isLoading, isError } = useQuery(exchangeQueryOptions.exchangeRate());
-
-  if (isLoading) {
-    return <PriceSkeleton />;
-  }
-  if (isError) {
-    return (
-      <Flex align="center" gap={2}>
-        <Tooltip label="환율 정보를 불러올 수 없어 USD로 표시됩니다" />
-        <ShoppingCartItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ShoppingCartItem.Price>
-      </Flex>
-    );
+  if (items.length === 0) {
+    return <EmptyCartSection />;
   }
 
-  return <ShoppingCartItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ShoppingCartItem.Price>;
-};
+  return <ShoppingCartContainer cartItems={items} />;
+}
 
 // 쇼핑 카트 컴포넌트
 const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
   const { addToShoppingCart, removeFromShoppingCart } = useShoppingCartActions();
-
-  const handleAddToCart = (product: Product) => {
-    addToShoppingCart(product);
-  };
-
-  const handleRemoveFromCart = (product: Product) => {
-    removeFromShoppingCart(product.id, 1);
-  };
 
   const handleRemoveAllFromCart = () => {
     cartItems.forEach(item => removeFromShoppingCart(item.product.id));
@@ -93,8 +59,6 @@ const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
         }}
       >
         {cartItems.map((item, index) => {
-          const availableStock = getAvailableStock(item.product, cartItems);
-
           return (
             <React.Fragment key={item.product.id}>
               <ShoppingCartItem.Root>
@@ -116,16 +80,16 @@ const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
                     <Counter.Root>
                       <Counter.Minus
                         onClick={() => {
-                          handleRemoveFromCart(item.product);
+                          removeFromShoppingCart(item.product.id, 1);
                         }}
                         disabled={item.quantity <= 1}
                       />
                       <Counter.Display value={item.quantity} />
                       <Counter.Plus
                         onClick={() => {
-                          handleAddToCart(item.product);
+                          addToShoppingCart(item.product);
                         }}
-                        disabled={availableStock <= 0}
+                        disabled={item.product.stock - item.quantity <= 0}
                       />
                     </Counter.Root>
                   </ShoppingCartItem.Footer>
@@ -141,14 +105,39 @@ const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
   );
 };
 
-function ShoppingCartSection() {
-  const { items } = useShoppingCartState();
+// 가격 표시 컴포넌트 (환율 정보 패치)
+const ShoppingCartItemPrice = ({ product }: { product: Product }) => {
+  const { currency } = useCurrency();
+  const { data: exchangeRate, isLoading, isError } = useQuery(exchangeQueryOptions.exchangeRate());
 
-  if (items.length === 0) {
-    return <EmptyCartSection />;
+  if (isLoading) {
+    return <PriceSkeleton />;
+  }
+  if (isError) {
+    return (
+      <Flex align="center" gap={2}>
+        <Tooltip label="환율 정보를 불러올 수 없어 USD로 표시됩니다" />
+        <ShoppingCartItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ShoppingCartItem.Price>
+      </Flex>
+    );
   }
 
-  return <ShoppingCartContainer cartItems={items} />;
-}
+  return <ShoppingCartItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ShoppingCartItem.Price>;
+};
+
+// 가격 표시 컴포넌트 스켈레톤
+const PriceSkeleton = () => {
+  return (
+    <styled.div
+      css={{
+        w: '80px',
+        h: '20px',
+        rounded: 'md',
+        bg: 'background.02_light-gray',
+        animation: 'skeleton-pulse',
+      }}
+    />
+  );
+};
 
 export default ShoppingCartSection;

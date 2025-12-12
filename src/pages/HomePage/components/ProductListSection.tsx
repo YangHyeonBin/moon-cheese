@@ -1,5 +1,5 @@
 import { Counter, SubGNB, Text } from '@/ui-lib';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Box, Center, Grid, Stack, styled } from 'styled-system/jsx';
 import ProductItem from '../components/ProductItem';
@@ -11,7 +11,6 @@ import { useCurrency } from '@/providers/CurrencyProvider';
 import { exchangeQueryOptions } from '@/remotes/queries/exchange';
 import { formatPrice } from '@/utils/price';
 import { useShoppingCartActions, useShoppingCartState } from '@/providers/ShoppingCartProvider';
-import { getAvailableStock } from '@/utils/stock';
 import type { ExchangeRate } from '@/remotes/exchange';
 import AsyncBoundary from '@/components/AsyncBoundary';
 
@@ -72,22 +71,18 @@ const ProductGrid = ({ products, exchangeRate }: { products: Product[]; exchange
   const { items: cartItems } = useShoppingCartState();
   const { addToShoppingCart, removeFromShoppingCart } = useShoppingCartActions();
 
+  // ProductId별 장바구니에 담은 수량 Map 생성
+  const cartQuantityMap = useMemo(() => new Map(cartItems.map(item => [item.product.id, item.quantity])), [cartItems]);
+
   const handleClickProduct = (productId: number) => {
     navigate(`/product/${productId}`);
-  };
-
-  const handleAddToCart = (product: Product) => {
-    addToShoppingCart(product);
-  };
-
-  const handleRemoveFromCart = (product: Product) => {
-    removeFromShoppingCart(product.id, 1);
   };
 
   return (
     <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
       {products.map(product => {
-        const availableStock = getAvailableStock(product, cartItems); // 이렇게 변수를 빼야할 때 컴포넌트로 분리도 고민해볼 수 있음
+        const cartQuantity = cartQuantityMap.get(product.id) ?? 0;
+        // const cartQuantity = cartItems.find(item => item.product.id === product.id)?.quantity ?? 0;
 
         return (
           <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
@@ -117,12 +112,12 @@ const ProductGrid = ({ products, exchangeRate }: { products: Product[]; exchange
             <Counter.Root>
               <Counter.Minus
                 onClick={() => {
-                  handleRemoveFromCart(product);
+                  removeFromShoppingCart(product.id, 1);
                 }}
-                disabled={availableStock >= product.stock} // 원본 재고와 같으면 담은 게 없다는 뜻이므로
+                disabled={cartQuantity <= 0} // 담은 게 없으면 비활성화
               />
-              <Counter.Display value={availableStock} />
-              <Counter.Plus onClick={() => handleAddToCart(product)} disabled={availableStock <= 0} />
+              <Counter.Display value={cartQuantity} />
+              <Counter.Plus onClick={() => addToShoppingCart(product)} disabled={product.stock - cartQuantity <= 0} />
             </Counter.Root>
           </ProductItem.Root>
         );
