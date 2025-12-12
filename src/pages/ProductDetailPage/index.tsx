@@ -26,9 +26,10 @@ function ProductDetailPage() {
 }
 
 const ProductDetailPageContainer = () => {
-  const { id: productId } = useParams();
+  const { id } = useParams();
+  const productId = Number(id);
 
-  if (!productId) {
+  if (!id || Number.isNaN(productId)) {
     throw new Error('Product ID is required');
   }
 

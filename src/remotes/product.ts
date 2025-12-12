@@ -11,11 +11,11 @@ export const getProductList = async () => {
   return response.products;
 };
 
-export const getProductDetail = async (productId: string) => {
+export const getProductDetail = async (productId: number) => {
   return await http.get<Product>(`/api/product/${productId}`);
 };
 
-export const getRecommendProductList = async (productId: string) => {
+export const getRecommendProductIds = async (productId: number) => {
   const response = await http.get<RecommendProductListResponse>(`/api/product/recommend/${productId}`);
   return response.recommendProductIds;
 };
