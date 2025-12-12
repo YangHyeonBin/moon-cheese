@@ -52,7 +52,7 @@ const ProductDetailPageContainer = () => {
 
       <Spacing size={2.5} />
 
-      <ProductDetailSection description={product.description} />
+      <ProductDetailSection description={product.detailDescription} />
 
       <Spacing size={2.5} />
 
