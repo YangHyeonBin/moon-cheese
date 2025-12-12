@@ -46,6 +46,7 @@ const ShoppingCartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // 수량 조정, 아이템 삭제 2개를 하고 있으니 분리하는 것도 좋다. -> 테스트 코드 짜기 어려운지를 기준으로 삼아보기
   const removeFromShoppingCart = (productId: number, quantity?: number) => {
     setShoppingCartItems(prev => {
       const existingItem = prev.find(item => item.product.id === productId);

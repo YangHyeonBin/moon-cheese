@@ -3,8 +3,9 @@ import { getProductList, getRecentProductList } from '../product';
 
 export const productQueries = {
   // 쿼리 키
-  recentProductListKey: () => ['recent', 'product', 'list'],
-  productListKey: () => ['product', 'list'],
+  all: () => ['product'],
+  productListKey: () => [...productQueries.all(), 'list'],
+  recentProductListKey: () => [...productQueries.all(), 'recent'],
 
   // 쿼리 옵션
   recentProductList: () =>

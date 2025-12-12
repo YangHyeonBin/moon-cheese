@@ -15,7 +15,8 @@ import { useShoppingCartActions, useShoppingCartState } from '@/providers/Shoppi
 import { getAvailableStock } from '@/utils/stock';
 import type { ExchangeRate } from '@/remotes/exchange';
 
-// 태그 컴포넌트 조건부 렌더링 함수
+// 태그 컴포넌트 조건부 렌더링 함수 - 크게 복잡성이 있지 않으니 따로 뺄 필요가..?
+// IIFE
 function renderFreeTags(product: Product) {
   switch (product.category) {
     case 'CHEESE':
@@ -138,7 +139,7 @@ const ProductGrid = ({ products, exchangeRate }: { products: Product[]; exchange
   return (
     <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
       {products.map(product => {
-        const availableStock = getAvailableStock(product, cartItems);
+        const availableStock = getAvailableStock(product, cartItems); // 이렇게 변수를 빼야할 때 컴포넌트로 분리도 고민해볼 수 있음
 
         return (
           <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
