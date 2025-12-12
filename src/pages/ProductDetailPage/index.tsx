@@ -43,11 +43,9 @@ const ProductDetailPageContainer = () => {
     <>
       <ThumbnailSection images={product.images} />
       <ProductInfoSection
-        name={product.name}
+        product={product}
         category={categoryToTagType(product.category)}
-        rating={product.rating}
         formattedPrice={formatPrice(product.price, currency, exchangeRate)}
-        quantity={product.stock}
       />
 
       <Spacing size={2.5} />
