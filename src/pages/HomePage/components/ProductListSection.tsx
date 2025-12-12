@@ -15,22 +15,6 @@ import { useShoppingCartActions, useShoppingCartState } from '@/providers/Shoppi
 import { getAvailableStock } from '@/utils/stock';
 import type { ExchangeRate } from '@/remotes/exchange';
 
-// 태그 컴포넌트 조건부 렌더링 함수 - 크게 복잡성이 있지 않으니 따로 뺄 필요가..?
-// IIFE
-function renderFreeTags(product: Product) {
-  switch (product.category) {
-    case 'CHEESE':
-      return null;
-    case 'CRACKER':
-      return product.isGlutenFree && <ProductItem.FreeTag type="gluten" />;
-    case 'TEA':
-      return product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />;
-    default: {
-      return product satisfies never;
-    }
-  }
-}
-
 // 스켈레톤 컴포넌트
 const ProductListSkeleton = () => {
   return (
@@ -150,7 +134,21 @@ const ProductGrid = ({ products, exchangeRate }: { products: Product[]; exchange
                 <ProductItem.Rating rating={product.rating} />
                 <ProductItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ProductItem.Price>
               </ProductItem.MetaLeft>
-              {renderFreeTags(product)}
+
+              {/* Free Tag */}
+              {(() => {
+                switch (product.category) {
+                  case 'CHEESE':
+                    return null;
+                  case 'CRACKER':
+                    return product.isGlutenFree && <ProductItem.FreeTag type="gluten" />;
+                  case 'TEA':
+                    return product.isCaffeineFree && <ProductItem.FreeTag type="caffeine" />;
+                  default: {
+                    return product satisfies never;
+                  }
+                }
+              })()}
             </ProductItem.Meta>
             <Counter.Root>
               <Counter.Minus

@@ -1,5 +1,5 @@
 import { Button, Counter, Spacing, Text } from '@/ui-lib';
-import { Center, Divider, Flex, Stack, styled } from 'styled-system/jsx';
+import { Divider, Flex, Stack, styled } from 'styled-system/jsx';
 import ShoppingCartItem from './ShoppingCartItem';
 import { useShoppingCartActions, useShoppingCartState, type CartItem } from '@/providers/ShoppingCartProvider';
 import { categoryToTagType } from '@/constants/category';
@@ -13,6 +13,7 @@ import type { Product } from '@/remotes/product';
 import Tooltip from '@/ui-lib/components/tooltip';
 import ConfirmModal from '@/ui-lib/components/confirm-modal';
 import { toast } from '@/ui-lib/components/toast';
+import EmptyCartSection from './EmptyCartSection';
 
 // 가격 표시 컴포넌트 스켈레톤
 const PriceSkeleton = () => {
@@ -47,35 +48,6 @@ const ShoppingCartItemPrice = ({ product }: { product: Product }) => {
   }
 
   return <ShoppingCartItem.Price>{formatPrice(product.price, currency, exchangeRate)}</ShoppingCartItem.Price>;
-};
-
-// 빈 카트 컴포넌트
-const EmptyShoppingCartContainer = () => {
-  return (
-    <styled.section css={{ p: 5, bgColor: 'background.01_white' }}>
-      <Text variant="H2_Bold">장바구니</Text>
-
-      <Spacing size={4} />
-
-      <Center
-        css={{
-          flexDirection: 'column',
-          gap: 2,
-          py: 10,
-          border: '1px solid',
-          borderColor: 'border.01_gray',
-          rounded: '2xl',
-        }}
-      >
-        <Text variant="B2_Bold" color="text.02_gray">
-          장바구니가 비어있습니다
-        </Text>
-        <Text variant="C2_Regular" color="text.02_gray">
-          상품을 장바구니에 추가해보세요!
-        </Text>
-      </Center>
-    </styled.section>
-  );
 };
 
 // 쇼핑 카트 컴포넌트
@@ -173,7 +145,7 @@ function ShoppingCartSection() {
   const { items } = useShoppingCartState();
 
   if (items.length === 0) {
-    return <EmptyShoppingCartContainer />;
+    return <EmptyCartSection />;
   }
 
   return <ShoppingCartContainer cartItems={items} />;
