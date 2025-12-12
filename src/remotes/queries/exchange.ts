@@ -1,14 +1,20 @@
 import { queryOptions } from '@tanstack/react-query';
 import { getExchangeRate } from '../exchange';
 
-export const exchangeQueries = {
-  // 키
-  exchangeRateKey: () => ['exchange-rate'],
+/**
+ * 환율 쿼리 키
+ */
+export const exchangeQueryKeys = {
+  exchangeRate: () => ['exchange-rate'],
+};
 
-  // 실제 쿼리 옵션
+/**
+ * 환율 쿼리 옵션
+ */
+export const exchangeQueryOptions = {
   exchangeRate: () =>
     queryOptions({
-      queryKey: [...exchangeQueries.exchangeRateKey()],
+      queryKey: [...exchangeQueryKeys.exchangeRate()],
       queryFn: getExchangeRate,
       staleTime: 0, // 환율은 매번 최신 정보 패치
     }),

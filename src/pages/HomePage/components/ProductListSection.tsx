@@ -3,13 +3,13 @@ import { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Box, Center, Grid, Stack, styled } from 'styled-system/jsx';
 import ProductItem from '../components/ProductItem';
-import { productQueries } from '@/remotes/queries/product';
+import { productQueryOptions } from '@/remotes/queries/product';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import { ErrorBoundary } from '@suspensive/react';
 import ErrorSection from '@/components/ErrorSection';
 import type { Product } from '@/remotes/product';
 import { useCurrency } from '@/providers/CurrencyProvider';
-import { exchangeQueries } from '@/remotes/queries/exchange';
+import { exchangeQueryOptions } from '@/remotes/queries/exchange';
 import { formatPrice } from '@/utils/price';
 import { useShoppingCartActions, useShoppingCartState } from '@/providers/ShoppingCartProvider';
 import { getAvailableStock } from '@/utils/stock';
@@ -172,7 +172,7 @@ const ProductListContainer = () => {
   const [currentTab, setCurrentTab] = useState('all');
 
   const [{ data: productList }, { data: exchangeRate }] = useSuspenseQueries({
-    queries: [productQueries.productList(), exchangeQueries.exchangeRate()],
+    queries: [productQueryOptions.productList(), exchangeQueryOptions.exchangeRate()],
   });
 
   const filteredProductList =

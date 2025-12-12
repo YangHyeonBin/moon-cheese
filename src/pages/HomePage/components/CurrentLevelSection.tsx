@@ -2,11 +2,11 @@ import { Box, Flex, styled } from 'styled-system/jsx';
 import { ProgressBar, Spacing, Text } from '@/ui-lib';
 import ErrorSection from '@/components/ErrorSection';
 import { GRADE_DISPLAY_NAME } from '@/constants/grade';
-import { userQueries } from '@/remotes/queries/user';
-import { gradePointQueries } from '@/remotes/queries/grade';
+import { userQueryOptions } from '@/remotes/queries/user';
+import { gradePointQueryOptions } from '@/remotes/queries/grade';
 import { ErrorBoundary } from '@suspensive/react';
 import { Suspense, type ReactNode } from 'react';
-import type { MeResponse } from '@/remotes/user';
+import type { Me } from '@/remotes/user';
 import type { GradePoint } from '@/remotes/grade';
 import { useSuspenseQueries } from '@tanstack/react-query';
 
@@ -15,7 +15,7 @@ import { useSuspenseQueries } from '@tanstack/react-query';
  * @returns 다음 등급 정보 및 다음 등급까지 필요한 포인트, 포인트 프로그레스 수치
  */
 const getNextGradeInfo = (
-  currentInfo: MeResponse,
+  currentInfo: Me,
   gradePoints: GradePoint[]
 ): { nextGrade: GradePoint | null; pointsNeeded: number; progress: number } => {
   const { point: currentPoint, grade: myGrade } = currentInfo;
@@ -111,7 +111,7 @@ const CurrentLevelSkeleton = () => {
 
 const CurrentLevelSectionContainer = () => {
   const [{ data: me }, { data: gradePoint }] = useSuspenseQueries({
-    queries: [userQueries.me(), gradePointQueries.gradePoint()],
+    queries: [userQueryOptions.me(), gradePointQueryOptions.gradePoint()],
   });
 
   return (

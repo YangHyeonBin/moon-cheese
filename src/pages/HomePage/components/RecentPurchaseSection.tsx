@@ -4,8 +4,8 @@ import ErrorSection from '@/components/ErrorSection';
 import { useCurrency } from '@/providers/CurrencyProvider';
 import { formatPrice } from '@/utils/price';
 import { useSuspenseQueries } from '@tanstack/react-query';
-import { exchangeQueries } from '@/remotes/queries/exchange';
-import { productQueries } from '@/remotes/queries/product';
+import { exchangeQueryOptions } from '@/remotes/queries/exchange';
+import { productQueryOptions } from '@/remotes/queries/product';
 import { ErrorBoundary } from '@suspensive/react';
 import { Suspense, type ReactNode } from 'react';
 
@@ -73,13 +73,8 @@ const RecentPurchaseSkeleton = () => {
 const RecentPurchaseSectionContainer = () => {
   const { currency } = useCurrency();
 
-  const [
-    { data: exchangeRate },
-    {
-      data: { recentProducts },
-    },
-  ] = useSuspenseQueries({
-    queries: [exchangeQueries.exchangeRate(), productQueries.recentProductList()],
+  const [{ data: exchangeRate }, { data: recentProducts }] = useSuspenseQueries({
+    queries: [exchangeQueryOptions.exchangeRate(), productQueryOptions.recentProductList()],
   });
 
   return (

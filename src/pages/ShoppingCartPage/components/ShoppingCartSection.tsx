@@ -6,7 +6,7 @@ import { categoryToTagType } from '@/constants/category';
 import React from 'react';
 import { formatPrice } from '@/utils/price';
 import { useCurrency } from '@/providers/CurrencyProvider';
-import { exchangeQueries } from '@/remotes/queries/exchange';
+import { exchangeQueryOptions } from '@/remotes/queries/exchange';
 import { useQuery } from '@tanstack/react-query';
 import { getAvailableStock } from '@/utils/stock';
 import type { Product } from '@/remotes/product';
@@ -33,7 +33,7 @@ const PriceSkeleton = () => {
 // 가격 표시 컴포넌트 (환율 정보 패치)
 const ShoppingCartItemPrice = ({ product }: { product: Product }) => {
   const { currency } = useCurrency();
-  const { data: exchangeRate, isLoading, isError } = useQuery(exchangeQueries.exchangeRate());
+  const { data: exchangeRate, isLoading, isError } = useQuery(exchangeQueryOptions.exchangeRate());
 
   if (isLoading) {
     return <PriceSkeleton />;
