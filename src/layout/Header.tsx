@@ -1,4 +1,5 @@
 import { useCurrency } from '@/providers/CurrencyProvider';
+import { useShoppingCartState } from '@/providers/ShoppingCartProvider';
 import Badge from '@/ui-lib/components/badge';
 import CurrencyToggle from '@/ui-lib/components/currency-toggle';
 import { ArrowLeftIcon, ShoppingCartIcon } from '@/ui-lib/components/icons';
@@ -47,9 +48,15 @@ function BackButton() {
 
 function ShoppingCartButton() {
   const navigate = useNavigate();
+  const { items: cartItems } = useShoppingCartState();
 
   return (
-    <Badge content={9} size="sm" cursor="pointer" onClick={() => navigate('/shopping-cart')}>
+    <Badge
+      content={cartItems.reduce((acc, cur) => acc + cur.quantity, 0)}
+      size="sm"
+      cursor="pointer"
+      onClick={() => navigate('/shopping-cart')}
+    >
       <ShoppingCartIcon size={22} />
     </Badge>
   );

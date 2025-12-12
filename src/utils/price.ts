@@ -1,4 +1,4 @@
-import type { ExchangeRate } from '@/hooks/queries/exchange';
+import type { ExchangeRate } from '@/remotes/exchange';
 import type { CurrencyType } from '@/ui-lib';
 
 /**

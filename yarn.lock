@@ -1391,6 +1391,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@suspensive/react@npm:^3.16.0":
+  version: 3.16.0
+  resolution: "@suspensive/react@npm:3.16.0"
+  peerDependencies:
+    react: ^18 || ^19
+  checksum: 10c0/f554e16ea4b49b5e8f9cd548e4199c0cfd5c5428cbe1868c4e7680c0a4a1b9ebb585e3ea83ae32988acac4b0bfffa795b515a772e902a11cb9d100ec91650fb1
+  languageName: node
+  linkType: hard
+
 "@swc/helpers@npm:^0.5.0":
   version: 0.5.17
   resolution: "@swc/helpers@npm:0.5.17"
@@ -5732,6 +5741,7 @@ __metadata:
     "@ark-ui/react": "npm:^5.18.1"
     "@eslint/js": "npm:^9.30.1"
     "@pandacss/dev": "npm:^0.54.0"
+    "@suspensive/react": "npm:^3.16.0"
     "@tanstack/react-query": "npm:^5.90.11"
     "@testing-library/dom": "npm:^10.4.0"
     "@testing-library/jest-dom": "npm:^6.6.4"
