@@ -37,7 +37,7 @@ const RecommendationSectionContainer = () => {
     queries: [productQueryOptions.recommendProductIds(productId), exchangeQueryOptions.exchangeRate()],
   });
 
-  // 추천 상품 상세 정보 조회
+  // 추천 상품 상세 정보 조회 => 디테일 추가 조회 없이, 이미 관리하고 있는 전체 프로덕트 리스트에서 찾는 게 낫다!
   const productQueries = useSuspenseQueries({
     queries: recommendProductIds.map(id => productQueryOptions.productDetail(id)),
   });
@@ -47,6 +47,8 @@ const RecommendationSectionContainer = () => {
   const handleClickProduct = (productId: number) => {
     navigate(`/product/${productId}`);
   };
+
+  // 추천 제품이 없으면 아래를 렌더링할 필요가 없쥐
 
   return (
     <styled.section css={{ bg: 'background.01_white', px: 5, pt: 5, pb: 6 }}>

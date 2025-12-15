@@ -15,7 +15,7 @@ export const productQueryKeys = {
 };
 
 /**
- * Product 쿼리 옵션
+ * Product 쿼리 옵션 - 여기에 키를 바로 정의하고 .queryKey로 접근 가능함!!!
  */
 export const productQueryOptions = {
   productList: () =>
