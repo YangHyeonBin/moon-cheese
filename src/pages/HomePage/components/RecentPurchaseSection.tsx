@@ -4,10 +4,70 @@ import ErrorSection from '@/components/ErrorSection';
 import { useCurrency } from '@/providers/CurrencyProvider';
 import { formatPrice } from '@/utils/price';
 import { useSuspenseQueries } from '@tanstack/react-query';
-import { exchangeQueries } from '@/remotes/queries/exchange';
-import { productQueries } from '@/remotes/queries/product';
-import { ErrorBoundary } from '@suspensive/react';
-import { Suspense, type ReactNode } from 'react';
+import { exchangeQueryOptions } from '@/remotes/queries/exchange';
+import { productQueryOptions } from '@/remotes/queries/product';
+import { type ReactNode } from 'react';
+import AsyncBoundary from '@/components/AsyncBoundary';
+
+const RecentPurchaseSection = () => {
+  return (
+    <AsyncBoundary
+      suspenseFallback={<RecentPurchaseSkeleton />}
+      errorFallback={({ onRetry }) => <ErrorSection onRetry={onRetry} />}
+    >
+      <RecentPurchaseSectionContainer />
+    </AsyncBoundary>
+  );
+};
+
+const RecentPurchaseSectionContainer = () => {
+  const { currency } = useCurrency();
+
+  const [{ data: exchangeRate }, { data: recentProducts }] = useSuspenseQueries({
+    queries: [exchangeQueryOptions.exchangeRate(), productQueryOptions.recentProductList()],
+  });
+
+  return (
+    <SectionWrapper>
+      <Flex
+        css={{
+          bg: 'background.01_white',
+          px: 5,
+          py: 4,
+          gap: 4,
+          rounded: '2xl',
+        }}
+        direction={'column'}
+      >
+        {recentProducts.map(product => {
+          return (
+            <Flex
+              key={product.id}
+              css={{
+                gap: 4,
+              }}
+            >
+              <styled.img
+                src={product.thumbnail}
+                alt="item"
+                css={{
+                  w: '60px',
+                  h: '60px',
+                  objectFit: 'cover',
+                  rounded: 'xl',
+                }}
+              />
+              <Flex flexDir="column" gap={1}>
+                <Text variant="B2_Medium">{product.name}</Text>
+                <Text variant="H1_Bold">{formatPrice(product.price, currency, exchangeRate)}</Text>
+              </Flex>
+            </Flex>
+          );
+        })}
+      </Flex>
+    </SectionWrapper>
+  );
+};
 
 // 레이아웃 컴포넌트
 const SectionWrapper = ({ children }: { children: ReactNode }) => {
@@ -69,70 +129,5 @@ const RecentPurchaseSkeleton = () => {
     </SectionWrapper>
   );
 };
-
-const RecentPurchaseSectionContainer = () => {
-  const { currency } = useCurrency();
-
-  const [
-    { data: exchangeRate },
-    {
-      data: { recentProducts },
-    },
-  ] = useSuspenseQueries({
-    queries: [exchangeQueries.exchangeRate(), productQueries.recentProductList()],
-  });
-
-  return (
-    <SectionWrapper>
-      <Flex
-        css={{
-          bg: 'background.01_white',
-          px: 5,
-          py: 4,
-          gap: 4,
-          rounded: '2xl',
-        }}
-        direction={'column'}
-      >
-        {recentProducts.map(product => {
-          return (
-            <Flex
-              key={product.id}
-              css={{
-                gap: 4,
-              }}
-            >
-              <styled.img
-                src={product.thumbnail}
-                alt="item"
-                css={{
-                  w: '60px',
-                  h: '60px',
-                  objectFit: 'cover',
-                  rounded: 'xl',
-                }}
-              />
-              <Flex flexDir="column" gap={1}>
-                <Text variant="B2_Medium">{product.name}</Text>
-                <Text variant="H1_Bold">{formatPrice(product.price, currency, exchangeRate)}</Text>
-              </Flex>
-            </Flex>
-          );
-        })}
-      </Flex>
-    </SectionWrapper>
-  );
-};
-
-const RecentPurchaseSection = ErrorBoundary.with(
-  {
-    fallback: ({ reset }) => <ErrorSection onRetry={reset} />,
-  },
-  () => (
-    <Suspense fallback={<RecentPurchaseSkeleton />}>
-      <RecentPurchaseSectionContainer />
-    </Suspense>
-  )
-);
 
 export default RecentPurchaseSection;

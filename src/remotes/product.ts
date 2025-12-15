@@ -1,6 +1,26 @@
 import type { Category } from '@/constants/category';
 import { http } from '@/utils/http';
 
+export const getRecentProductList = async () => {
+  const response = await http.get<RecentProductListResponse>('/api/recent/product/list');
+  return response.recentProducts;
+};
+
+export const getProductList = async () => {
+  const response = await http.get<ProductListResponse>('/api/product/list');
+  return response.products;
+};
+
+export const getProductDetail = async (productId: number) => {
+  return await http.get<Product>(`/api/product/${productId}`);
+};
+
+export const getRecommendProductIds = async (productId: number) => {
+  const response = await http.get<RecommendProductListResponse>(`/api/product/recommend/${productId}`);
+  return response.recommendProductIds;
+};
+
+// Type, Interface
 interface ProductBase {
   id: number;
   name: string;
@@ -36,6 +56,7 @@ type RecentProduct = {
 
 export type Product = CheeseProduct | CrackerProduct | TeaProduct;
 
+// DTOs
 type RecentProductListResponse = {
   recentProducts: RecentProduct[];
 };
@@ -44,12 +65,6 @@ type ProductListResponse = {
   products: Product[];
 };
 
-export const getRecentProductList = async () => {
-  const response = await http.get<RecentProductListResponse>('/api/recent/product/list');
-  return response;
-};
-
-export const getProductList = async () => {
-  const response = await http.get<ProductListResponse>('/api/product/list');
-  return response.products;
+type RecommendProductListResponse = {
+  recommendProductIds: number[];
 };

@@ -1,21 +1,44 @@
 import { queryOptions } from '@tanstack/react-query';
-import { getProductList, getRecentProductList } from '../product';
+import { getProductDetail, getProductList, getRecentProductList, getRecommendProductIds } from '../product';
 
-export const productQueries = {
-  // 쿼리 키
-  recentProductListKey: () => ['recent', 'product', 'list'],
-  productListKey: () => ['product', 'list'],
+/**
+ * Product 쿼리 키
+ */
+export const productQueryKeys = {
+  all: () => ['product'],
+  productList: () => [...productQueryKeys.all(), 'list'],
+  detail: (productId: number) => [...productQueryKeys.all(), 'detail', productId],
 
-  // 쿼리 옵션
+  recentProductList: () => [...productQueryKeys.all(), 'recent'],
+
+  recommendProductIds: (productId: number) => [...productQueryKeys.all(), 'recommend', productId],
+};
+
+/**
+ * Product 쿼리 옵션
+ */
+export const productQueryOptions = {
+  productList: () =>
+    queryOptions({
+      queryKey: productQueryKeys.productList(),
+      queryFn: getProductList,
+    }),
+
+  productDetail: (productId: number) =>
+    queryOptions({
+      queryKey: productQueryKeys.detail(productId),
+      queryFn: () => getProductDetail(productId),
+    }),
+
   recentProductList: () =>
     queryOptions({
-      queryKey: productQueries.recentProductListKey(),
+      queryKey: productQueryKeys.recentProductList(),
       queryFn: getRecentProductList,
     }),
 
-  productList: () =>
+  recommendProductIds: (productId: number) =>
     queryOptions({
-      queryKey: productQueries.productListKey(),
-      queryFn: getProductList,
+      queryKey: productQueryKeys.recommendProductIds(productId),
+      queryFn: () => getRecommendProductIds(productId),
     }),
 };
