@@ -1,9 +1,8 @@
 import { Box, Flex, styled } from 'styled-system/jsx';
 import { ProgressBar, Spacing, Text } from '@/ui-lib';
-import ErrorSection from '@/components/ErrorSection';
 import { GRADE_DISPLAY_NAME } from '@/constants/grade';
-import { userQueryOptions } from '@/remotes/queries/user';
-import { gradePointQueryOptions } from '@/remotes/queries/grade';
+import { userQueries } from '@/remotes/queries/user';
+import { gradeQueries } from '@/remotes/queries/grade';
 import { type ReactNode } from 'react';
 import type { Me } from '@/remotes/user';
 import type { GradePoint } from '@/remotes/grade';
@@ -12,10 +11,7 @@ import AsyncBoundary from '@/components/AsyncBoundary';
 
 const CurrentLevelSection = () => {
   return (
-    <AsyncBoundary
-      errorFallback={({ onRetry }) => <ErrorSection onRetry={onRetry} />}
-      suspenseFallback={<CurrentLevelSkeleton />}
-    >
+    <AsyncBoundary suspenseFallback={<CurrentLevelSkeleton />}>
       <CurrentLevelSectionContainer />
     </AsyncBoundary>
   );
@@ -23,7 +19,7 @@ const CurrentLevelSection = () => {
 
 const CurrentLevelSectionContainer = () => {
   const [{ data: me }, { data: gradePoint }] = useSuspenseQueries({
-    queries: [userQueryOptions.me(), gradePointQueryOptions.gradePoint()],
+    queries: [userQueries.me(), gradeQueries.gradePoint()],
   });
 
   return (
@@ -37,15 +33,21 @@ const CurrentLevelSectionContainer = () => {
           <Box textAlign="left">
             <Text variant="C1_Bold">현재 포인트</Text>
             <Text variant="C2_Regular" color="neutral.03_gray">
-              {me.point}p
+              {me.point.toFixed(2)}p
             </Text>
           </Box>
-          <Box textAlign="right">
-            <Text variant="C1_Bold">다음 등급까지</Text>
-            <Text variant="C2_Regular" color="neutral.03_gray">
-              {getNextGradeInfo(me, gradePoint).pointsNeeded}p
-            </Text>
-          </Box>
+          {me.grade === 'COMMANDER' ? (
+            <Box textAlign="right">
+              <Text variant="C1_Bold">최고 등급</Text>
+            </Box>
+          ) : (
+            <Box textAlign="right">
+              <Text variant="C1_Bold">다음 등급까지</Text>
+              <Text variant="C2_Regular" color="neutral.03_gray">
+                {getNextGradeInfo(me, gradePoint).pointsNeeded.toFixed(2)}p
+              </Text>
+            </Box>
+          )}
         </Flex>
       </Flex>
     </SectionWrapper>

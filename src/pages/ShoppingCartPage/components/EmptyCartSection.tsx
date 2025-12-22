@@ -6,7 +6,7 @@ function EmptyCartSection() {
   const navigate = useNavigate();
 
   return (
-    <Center p={5} aspectRatio={1} bgColor="background.01_white">
+    <Center p={5} minH="calc(100dvh - token(sizes.14))" bgColor="background.01_white">
       <VStack gap={4} textAlign="center">
         <styled.img
           src="/moon-cheese-images/empty-cart.png"

@@ -20,6 +20,10 @@ export const getRecommendProductIds = async (productId: number) => {
   return response.recommendProductIds;
 };
 
+export const postProductPurchase = async (requestBody: PurchaseRequestBody) => {
+  await http.post(`/api/product/purchase`, requestBody);
+};
+
 // Type, Interface
 interface ProductBase {
   id: number;
@@ -56,6 +60,8 @@ type RecentProduct = {
 
 export type Product = CheeseProduct | CrackerProduct | TeaProduct;
 
+export type DeliveryMethod = 'EXPRESS' | 'PREMIUM';
+
 // DTOs
 type RecentProductListResponse = {
   recentProducts: RecentProduct[];
@@ -67,4 +73,13 @@ type ProductListResponse = {
 
 type RecommendProductListResponse = {
   recommendProductIds: number[];
+};
+
+type PurchaseRequestBody = {
+  deliveryType: DeliveryMethod;
+  totalPrice: number;
+  items: Array<{
+    productId: number;
+    quantity: number;
+  }>;
 };

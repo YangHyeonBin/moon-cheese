@@ -1,20 +1,16 @@
 import { Flex, styled } from 'styled-system/jsx';
 import { Spacing, Text } from '@/ui-lib';
-import ErrorSection from '@/components/ErrorSection';
 import { useCurrency } from '@/providers/CurrencyProvider';
 import { formatPrice } from '@/utils/price';
 import { useSuspenseQueries } from '@tanstack/react-query';
-import { exchangeQueryOptions } from '@/remotes/queries/exchange';
-import { productQueryOptions } from '@/remotes/queries/product';
+import { exchangeQueries } from '@/remotes/queries/exchange';
+import { productQueries } from '@/remotes/queries/product';
 import { type ReactNode } from 'react';
 import AsyncBoundary from '@/components/AsyncBoundary';
 
 const RecentPurchaseSection = () => {
   return (
-    <AsyncBoundary
-      suspenseFallback={<RecentPurchaseSkeleton />}
-      errorFallback={({ onRetry }) => <ErrorSection onRetry={onRetry} />}
-    >
+    <AsyncBoundary suspenseFallback={<RecentPurchaseSkeleton />}>
       <RecentPurchaseSectionContainer />
     </AsyncBoundary>
   );
@@ -24,7 +20,7 @@ const RecentPurchaseSectionContainer = () => {
   const { currency } = useCurrency();
 
   const [{ data: exchangeRate }, { data: recentProducts }] = useSuspenseQueries({
-    queries: [exchangeQueryOptions.exchangeRate(), productQueryOptions.recentProductList()],
+    queries: [exchangeQueries.exchangeRate(), productQueries.recentProductList()],
   });
 
   return (

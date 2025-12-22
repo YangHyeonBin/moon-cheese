@@ -16,7 +16,14 @@ export const CATEGORY_DISPLAY_NAME: Record<Category, string> = {
 
 /**
  * UI 라이브러리의 요구사항에 맞게 도메인 타입인 Category를 변환
+ * => 냅다 lowercase하지 말고 태그 타입으로 변경하는 함수 만들기
  */
-export const categoryToTagType = (category: Category): TagType => {
-  return category.toLowerCase() as TagType;
+// export const categoryToTagType = (category: Category): TagType => {
+//   return category.toLowerCase() as TagType;
+// };
+
+export const CATEGORY_TO_TAG_TYPE: Record<Category, TagType> = {
+  CHEESE: 'cheese',
+  CRACKER: 'cracker',
+  TEA: 'tea',
 };

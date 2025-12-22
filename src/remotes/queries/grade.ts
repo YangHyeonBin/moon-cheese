@@ -1,21 +1,19 @@
 import { queryOptions } from '@tanstack/react-query';
-import { getGradePoint } from '../grade';
-
-/**
- * 등급 쿼리 키
- */
-export const gradePointQueryKeys = {
-  gradePoint: () => ['grade', 'point'],
-};
+import { getGradePoint, getGradeShippingList } from '../grade';
 
 /**
  * 등급 쿼리 옵션
  */
-export const gradePointQueryOptions = {
-  // 실제 쿼리 옵션
+export const gradeQueries = {
   gradePoint: () =>
     queryOptions({
-      queryKey: gradePointQueryKeys.gradePoint(),
+      queryKey: ['grade', 'point'],
       queryFn: getGradePoint,
+    }),
+
+  gradeShipping: () =>
+    queryOptions({
+      queryKey: ['grade', 'shipping'],
+      queryFn: getGradeShippingList,
     }),
 };

@@ -48,7 +48,7 @@ function BackButton() {
 
 function ShoppingCartButton() {
   const navigate = useNavigate();
-  const { items: cartItems } = useShoppingCartState();
+  const { cartItems } = useShoppingCartState();
 
   return (
     <Badge

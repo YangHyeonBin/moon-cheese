@@ -5,21 +5,17 @@ import RecommendationSection from './components/RecommendationSection';
 import ThumbnailSection from './components/ThumbnailSection';
 import { useParams } from 'react-router';
 import { useSuspenseQueries } from '@tanstack/react-query';
-import { productQueryOptions } from '@/remotes/queries/product';
+import { productQueries } from '@/remotes/queries/product';
 import AsyncBoundary from '@/components/AsyncBoundary';
-import ErrorSection from '@/components/ErrorSection';
-import { categoryToTagType } from '@/constants/category';
-import { exchangeQueryOptions } from '@/remotes/queries/exchange';
+import { exchangeQueries } from '@/remotes/queries/exchange';
 import { useCurrency } from '@/providers/CurrencyProvider';
 import { formatPrice } from '@/utils/price';
 import { Box, Stack, styled } from 'styled-system/jsx';
+import { CATEGORY_TO_TAG_TYPE } from '@/constants/category';
 
 function ProductDetailPage() {
   return (
-    <AsyncBoundary
-      errorFallback={({ onRetry }) => <ErrorSection onRetry={onRetry} />}
-      suspenseFallback={<ProductDetailPageSkeleton />}
-    >
+    <AsyncBoundary suspenseFallback={<ProductDetailPageSkeleton />}>
       <ProductDetailPageContainer />
     </AsyncBoundary>
   );
@@ -36,7 +32,7 @@ const ProductDetailPageContainer = () => {
   const { currency } = useCurrency();
 
   const [{ data: product }, { data: exchangeRate }] = useSuspenseQueries({
-    queries: [productQueryOptions.productDetail(productId), exchangeQueryOptions.exchangeRate()],
+    queries: [productQueries.productDetail(productId), exchangeQueries.exchangeRate()],
   });
 
   return (
@@ -44,7 +40,7 @@ const ProductDetailPageContainer = () => {
       <ThumbnailSection images={product.images} />
       <ProductInfoSection
         product={product}
-        category={categoryToTagType(product.category)}
+        category={CATEGORY_TO_TAG_TYPE[product.category]}
         formattedPrice={formatPrice(product.price, currency, exchangeRate)}
       />
 

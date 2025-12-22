@@ -2,19 +2,12 @@ import { queryOptions } from '@tanstack/react-query';
 import { getMe } from '../user';
 
 /**
- * 유저 쿼리 키
- */
-export const userQueryKeys = {
-  me: () => ['me'],
-};
-
-/**
  * 유저 쿼리 옵션
  */
-export const userQueryOptions = {
+export const userQueries = {
   me: () =>
     queryOptions({
-      queryKey: userQueryKeys.me(),
+      queryKey: ['me'],
       queryFn: getMe,
     }),
 };

@@ -1,6 +1,7 @@
 import { ErrorBoundary } from '@suspensive/react';
 import { QueryErrorResetBoundary } from '@tanstack/react-query';
 import { Suspense, type ReactNode } from 'react';
+import ErrorSection from './ErrorSection';
 
 /**
  * 비동기 데이터 패칭 컴포넌트의 로딩/에러 상태를 선언적으로 처리하는 래퍼
@@ -11,11 +12,11 @@ import { Suspense, type ReactNode } from 'react';
  */
 const AsyncBoundary = ({
   children,
-  errorFallback,
+  errorFallback = ({ onRetry }) => <ErrorSection onRetry={onRetry} />,
   suspenseFallback,
 }: {
   children: ReactNode;
-  errorFallback: ({ onRetry }: { onRetry: () => void }) => ReactNode;
+  errorFallback?: ({ onRetry }: { onRetry: () => void }) => ReactNode;
   suspenseFallback: ReactNode;
 }) => {
   return (

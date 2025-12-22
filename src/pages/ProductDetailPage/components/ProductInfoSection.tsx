@@ -13,7 +13,7 @@ type ProductInfoSectionProps = {
 
 function ProductInfoSection({ product, category, formattedPrice }: ProductInfoSectionProps) {
   const { id, name, rating, stock } = product;
-  const { items: cartItems } = useShoppingCartState();
+  const { cartItems } = useShoppingCartState();
   const { addToShoppingCart, removeFromShoppingCart } = useShoppingCartActions();
 
   const cartQuantity = cartItems.find(item => item.product.id === id)?.quantity ?? 0;

@@ -3,19 +3,15 @@ import { useNavigate, useParams } from 'react-router';
 import { HStack, Stack, styled } from 'styled-system/jsx';
 import RecommendationProductItem from './RecommendationProductItem';
 import { useSuspenseQueries } from '@tanstack/react-query';
-import { productQueryOptions } from '@/remotes/queries/product';
+import { productQueries } from '@/remotes/queries/product';
 import AsyncBoundary from '@/components/AsyncBoundary';
-import ErrorSection from '@/components/ErrorSection';
-import { exchangeQueryOptions } from '@/remotes/queries/exchange';
+import { exchangeQueries } from '@/remotes/queries/exchange';
 import { useCurrency } from '@/providers/CurrencyProvider';
 import { formatPrice } from '@/utils/price';
 
 function RecommendationSection() {
   return (
-    <AsyncBoundary
-      errorFallback={({ onRetry }) => <ErrorSection onRetry={onRetry} />}
-      suspenseFallback={<RecommendationSkeleton />}
-    >
+    <AsyncBoundary suspenseFallback={<RecommendationSkeleton />}>
       <RecommendationSectionContainer />
     </AsyncBoundary>
   );
@@ -34,12 +30,12 @@ const RecommendationSectionContainer = () => {
 
   // 추천 상품 ID 목록 조회
   const [{ data: recommendProductIds }, { data: exchangeRate }] = useSuspenseQueries({
-    queries: [productQueryOptions.recommendProductIds(productId), exchangeQueryOptions.exchangeRate()],
+    queries: [productQueries.recommendProductIds(productId), exchangeQueries.exchangeRate()],
   });
 
   // 추천 상품 상세 정보 조회 => 디테일 추가 조회 없이, 이미 관리하고 있는 전체 프로덕트 리스트에서 찾는 게 낫다!
   const productQueries = useSuspenseQueries({
-    queries: recommendProductIds.map(id => productQueryOptions.productDetail(id)),
+    queries: recommendProductIds.map(id => productQueries.productDetail(id)),
   });
 
   const recommendProductList = productQueries.map(query => query.data);

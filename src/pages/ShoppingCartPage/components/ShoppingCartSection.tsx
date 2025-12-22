@@ -1,37 +1,23 @@
 import { Button, Counter, Spacing, Text } from '@/ui-lib';
 import { Divider, Flex, Stack, styled } from 'styled-system/jsx';
 import ShoppingCartItem from './ShoppingCartItem';
-import { useShoppingCartActions, useShoppingCartState, type CartItem } from '@/providers/ShoppingCartProvider';
-import { categoryToTagType } from '@/constants/category';
+import { useShoppingCartActions, useShoppingCartState } from '@/providers/ShoppingCartProvider';
 import React from 'react';
 import { formatPrice } from '@/utils/price';
 import { useCurrency } from '@/providers/CurrencyProvider';
-import { exchangeQueryOptions } from '@/remotes/queries/exchange';
+import { exchangeQueries } from '@/remotes/queries/exchange';
 import { useQuery } from '@tanstack/react-query';
 import type { Product } from '@/remotes/product';
 import Tooltip from '@/ui-lib/components/tooltip';
 import ConfirmModal from '@/ui-lib/components/confirm-modal';
 import { toast } from '@/ui-lib/components/toast';
-import EmptyCartSection from './EmptyCartSection';
-
-function ShoppingCartSection() {
-  const { items } = useShoppingCartState();
-
-  if (items.length === 0) {
-    return <EmptyCartSection />;
-  }
-
-  return <ShoppingCartContainer cartItems={items} />;
-}
+import { CATEGORY_TO_TAG_TYPE } from '@/constants/category';
 
 // 쇼핑 카트 컴포넌트
-const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
-  const { addToShoppingCart, removeFromShoppingCart } = useShoppingCartActions();
-
-  const handleRemoveAllFromCart = () => {
-    cartItems.forEach(item => removeFromShoppingCart(item.product.id));
-    toast.success('장바구니를 비웠습니다.');
-  };
+const ShoppingCartSection = () => {
+  const { cartItems } = useShoppingCartState();
+  const { addToShoppingCart, removeFromShoppingCart, deleteFromShoppingCart, clearShoppingCart } =
+    useShoppingCartActions();
 
   return (
     <styled.section css={{ p: 5, bgColor: 'background.01_white' }}>
@@ -45,7 +31,11 @@ const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
           }
           title="장바구니 비우기"
           description="장바구니의 모든 상품을 삭제할까요?"
-          onConfirm={handleRemoveAllFromCart}
+          onConfirm={() => {
+            // cartItems.forEach(item => deleteFromShoppingCart(item.product.id));
+            clearShoppingCart();
+            toast.success('장바구니를 비웠습니다.');
+          }}
         />
       </Flex>
       <Spacing size={4} />
@@ -67,11 +57,11 @@ const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
                 )}
                 <ShoppingCartItem.Content>
                   <ShoppingCartItem.Info
-                    type={categoryToTagType(item.product.category)}
+                    type={CATEGORY_TO_TAG_TYPE[item.product.category]}
                     title={item.product.name}
                     description={item.product.description}
                     onDelete={() => {
-                      removeFromShoppingCart(item.product.id);
+                      deleteFromShoppingCart(item.product.id);
                       toast.success(`${item.product.name}(이)가 삭제되었습니다.`);
                     }}
                   />
@@ -80,16 +70,16 @@ const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
                     <Counter.Root>
                       <Counter.Minus
                         onClick={() => {
-                          removeFromShoppingCart(item.product.id, 1);
+                          removeFromShoppingCart(item.product.id);
                         }}
-                        disabled={item.quantity <= 1}
+                        disabled={item.quantity <= 0}
                       />
                       <Counter.Display value={item.quantity} />
                       <Counter.Plus
                         onClick={() => {
                           addToShoppingCart(item.product);
                         }}
-                        disabled={item.product.stock - item.quantity <= 0}
+                        disabled={item.product.stock <= item.quantity}
                       />
                     </Counter.Root>
                   </ShoppingCartItem.Footer>
@@ -108,7 +98,7 @@ const ShoppingCartContainer = ({ cartItems }: { cartItems: CartItem[] }) => {
 // 가격 표시 컴포넌트 (환율 정보 패치)
 const ShoppingCartItemPrice = ({ product }: { product: Product }) => {
   const { currency } = useCurrency();
-  const { data: exchangeRate, isLoading, isError } = useQuery(exchangeQueryOptions.exchangeRate());
+  const { data: exchangeRate, isLoading, isError } = useQuery(exchangeQueries.exchangeRate());
 
   if (isLoading) {
     return <PriceSkeleton />;

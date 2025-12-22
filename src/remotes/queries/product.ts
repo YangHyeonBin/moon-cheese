@@ -2,43 +2,30 @@ import { queryOptions } from '@tanstack/react-query';
 import { getProductDetail, getProductList, getRecentProductList, getRecommendProductIds } from '../product';
 
 /**
- * Product 쿼리 키
- */
-export const productQueryKeys = {
-  all: () => ['product'],
-  productList: () => [...productQueryKeys.all(), 'list'],
-  detail: (productId: number) => [...productQueryKeys.all(), 'detail', productId],
-
-  recentProductList: () => [...productQueryKeys.all(), 'recent'],
-
-  recommendProductIds: (productId: number) => [...productQueryKeys.all(), 'recommend', productId],
-};
-
-/**
  * Product 쿼리 옵션 - 여기에 키를 바로 정의하고 .queryKey로 접근 가능함!!!
  */
-export const productQueryOptions = {
+export const productQueries = {
   productList: () =>
     queryOptions({
-      queryKey: productQueryKeys.productList(),
+      queryKey: ['product', 'list'],
       queryFn: getProductList,
     }),
 
   productDetail: (productId: number) =>
     queryOptions({
-      queryKey: productQueryKeys.detail(productId),
+      queryKey: ['product', 'detail', productId],
       queryFn: () => getProductDetail(productId),
     }),
 
   recentProductList: () =>
     queryOptions({
-      queryKey: productQueryKeys.recentProductList(),
+      queryKey: ['product', 'recent'],
       queryFn: getRecentProductList,
     }),
 
   recommendProductIds: (productId: number) =>
     queryOptions({
-      queryKey: productQueryKeys.recommendProductIds(productId),
+      queryKey: ['product', 'recommend', productId],
       queryFn: () => getRecommendProductIds(productId),
     }),
 };

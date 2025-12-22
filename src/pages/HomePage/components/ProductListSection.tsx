@@ -3,23 +3,18 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Box, Center, Grid, Stack, styled } from 'styled-system/jsx';
 import ProductItem from '../components/ProductItem';
-import { productQueryOptions } from '@/remotes/queries/product';
-import { useSuspenseQueries } from '@tanstack/react-query';
-import ErrorSection from '@/components/ErrorSection';
+import { productQueries } from '@/remotes/queries/product';
+import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import type { Product } from '@/remotes/product';
 import { useCurrency } from '@/providers/CurrencyProvider';
-import { exchangeQueryOptions } from '@/remotes/queries/exchange';
+import { exchangeQueries } from '@/remotes/queries/exchange';
 import { formatPrice } from '@/utils/price';
 import { useShoppingCartActions, useShoppingCartState } from '@/providers/ShoppingCartProvider';
-import type { ExchangeRate } from '@/remotes/exchange';
 import AsyncBoundary from '@/components/AsyncBoundary';
 
 const ProductListSection = () => {
   return (
-    <AsyncBoundary
-      errorFallback={({ onRetry }) => <ErrorSection onRetry={onRetry} />}
-      suspenseFallback={<ProductListSkeleton />}
-    >
+    <AsyncBoundary suspenseFallback={<ProductListSkeleton />}>
       <ProductListContainer />
     </AsyncBoundary>
   );
@@ -29,20 +24,10 @@ const ProductListSection = () => {
 const ProductListContainer = () => {
   const [currentTab, setCurrentTab] = useState('all');
 
-  const [{ data: productList }, { data: exchangeRate }] = useSuspenseQueries({
-    queries: [productQueryOptions.productList(), exchangeQueryOptions.exchangeRate()],
-  });
+  const { data: productList } = useSuspenseQuery(productQueries.productList());
 
   const filteredProductList =
     currentTab === 'all' ? productList : productList.filter(p => p.category.toLowerCase() === currentTab);
-
-  const renderProductList = () => {
-    return filteredProductList.length === 0 ? (
-      <EmptyProductListContainer />
-    ) : (
-      <ProductGrid products={filteredProductList} exchangeRate={exchangeRate} />
-    );
-  };
 
   return (
     <styled.section bg="background.01_white">
@@ -58,25 +43,26 @@ const ProductListContainer = () => {
         </SubGNB.List>
       </SubGNB.Root>
 
-      {renderProductList()}
+      {filteredProductList.length === 0 ? (
+        <EmptyProductListContainer />
+      ) : (
+        <ProductGrid products={filteredProductList} />
+      )}
     </styled.section>
   );
 };
 
 // 제품 목록 컴포넌트
-const ProductGrid = ({ products, exchangeRate }: { products: Product[]; exchangeRate: ExchangeRate }) => {
+const ProductGrid = ({ products }: { products: Product[] }) => {
   const navigate = useNavigate();
 
   const { currency } = useCurrency();
-  const { items: cartItems } = useShoppingCartState();
+  const { data: exchangeRate } = useQuery(exchangeQueries.exchangeRate());
+  const { cartItems } = useShoppingCartState();
   const { addToShoppingCart, removeFromShoppingCart } = useShoppingCartActions();
 
   // ProductId별 장바구니에 담은 수량 Map 생성
   const cartQuantityMap = useMemo(() => new Map(cartItems.map(item => [item.product.id, item.quantity])), [cartItems]);
-
-  const handleClickProduct = (productId: number) => {
-    navigate(`/product/${productId}`);
-  };
 
   return (
     <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
@@ -85,7 +71,7 @@ const ProductGrid = ({ products, exchangeRate }: { products: Product[]; exchange
         // const cartQuantity = cartItems.find(item => item.product.id === product.id)?.quantity ?? 0;
 
         return (
-          <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
+          <ProductItem.Root key={product.id} onClick={() => navigate(`/product/${product.id}`)}>
             {product.images.length > 0 && <ProductItem.Image src={product.images[0]} alt={product.name} />}
             <ProductItem.Info title={product.name} description={product.description} />
             <ProductItem.Meta>
@@ -112,12 +98,12 @@ const ProductGrid = ({ products, exchangeRate }: { products: Product[]; exchange
             <Counter.Root>
               <Counter.Minus
                 onClick={() => {
-                  removeFromShoppingCart(product.id, 1);
+                  removeFromShoppingCart(product.id);
                 }}
                 disabled={cartQuantity <= 0} // 담은 게 없으면 비활성화
               />
               <Counter.Display value={cartQuantity} />
-              <Counter.Plus onClick={() => addToShoppingCart(product)} disabled={product.stock - cartQuantity <= 0} />
+              <Counter.Plus onClick={() => addToShoppingCart(product)} disabled={product.stock <= cartQuantity} />
             </Counter.Root>
           </ProductItem.Root>
         );
