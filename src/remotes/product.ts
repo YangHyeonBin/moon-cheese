@@ -75,7 +75,7 @@ type RecommendProductListResponse = {
   recommendProductIds: number[];
 };
 
-type PurchaseRequestBody = {
+export type PurchaseRequestBody = {
   deliveryType: DeliveryMethod;
   totalPrice: number;
   items: Array<{

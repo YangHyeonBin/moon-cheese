@@ -11,7 +11,7 @@ import { formatPrice } from '@/utils/price';
 import { getDeliveryFee } from '@/utils/deliveryFee';
 import { userQueries } from '@/remotes/queries/user';
 import { gradeQueries } from '@/remotes/queries/grade';
-import { postProductPurchase, type DeliveryMethod } from '@/remotes/product';
+import { postProductPurchase, type DeliveryMethod, type PurchaseRequestBody } from '@/remotes/product';
 import AsyncBoundary from '@/components/AsyncBoundary';
 
 function CheckoutSection({ deliveryMethod }: { deliveryMethod: DeliveryMethod }) {
@@ -39,14 +39,10 @@ function CheckoutSectionContainer({ deliveryMethod }: { deliveryMethod: Delivery
 
   const { mutateAsync: purchase, isPending } = useMutation({
     // mutationFn의 인자로 받아보기
-    mutationFn: () =>
-      postProductPurchase({
-        deliveryType: deliveryMethod,
-        totalPrice,
-        items: cartItems.map(item => {
-          return { productId: item.product.id, quantity: item.quantity };
-        }),
-      }),
+    // mutationFn이 외부 상태에 의존하지 않아 순수해짐
+    // 어떤 데이터로 mutation이 실행되는지 호출부에서 명확히 보임
+    // 테스트, 재사용 쉬워짐
+    mutationFn: (params: PurchaseRequestBody) => postProductPurchase(params),
     onSuccess: async () => {
       // 장바구니 비우기
       clearShoppingCart();
@@ -60,7 +56,14 @@ function CheckoutSectionContainer({ deliveryMethod }: { deliveryMethod: Delivery
   });
 
   const onClickPurchase = async () => {
-    await purchase();
+    await purchase({
+      deliveryType: deliveryMethod,
+      totalPrice,
+      items: cartItems.map(item => {
+        return { productId: item.product.id, quantity: item.quantity };
+      }),
+    });
+
     toast.success('결제가 완료되었습니다.');
     navigate('/');
   };
